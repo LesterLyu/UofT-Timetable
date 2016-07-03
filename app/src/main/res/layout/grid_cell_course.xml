@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:drawSelectorOnTop="true">
+
+    <TextView
+        android:paddingBottom="0dp"
+        android:textSize="12sp"
+        android:layout_width="fill_parent"
+        android:layout_marginRight="2dp"
+        android:layout_height="60dp"
+        android:layout_weight="1"
+        android:text=""
+        android:id="@+id/gridCellCourse"
+        android:background="@drawable/cell_shape"/>
+</RelativeLayout>

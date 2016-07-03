@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/menu_drawer">
+
+    <group android:checkableBehavior="single">
+        <item android:id="@+id/course_list" android:icon="@drawable/ic_view_list_black_24dp"
+            android:title="Course list"/>
+        <item android:id="@+id/fall_timetable" android:icon="@drawable/ic_view_module_black_24dp"
+            android:title="Fall timetable"
+            android:checked="true"/>
+        <item android:id="@+id/winter_timetable" android:icon="@drawable/ic_view_module_black_24dp"
+            android:title="Winter timetable" />
+        <item android:id="@+id/nav_manage" android:icon="@drawable/ic_import_export_black_24dp"
+            android:title="Import timetable"
+            android:checkable="false"/>
+    </group>
+
+    <item android:id="@+id/item_extra_info" android:title="Course info">
+        <menu>
+            <item android:id="@+id/nav_a08" android:icon="@drawable/ic_info_black_24dp"
+                android:title="CSCA08" />
+            <item android:id="@+id/nav_a20" android:icon="@drawable/ic_info_black_24dp"
+                android:title="CSCA20" />
+            <item android:id="@+id/nav_a67" android:icon="@drawable/ic_info_black_24dp"
+                android:title="CSCA67" />
+            <item android:id="@+id/nav_a48" android:icon="@drawable/ic_info_black_24dp"
+                  android:title="CSCA48" />
+            <item android:id="@+id/nav_cscx" android:icon="@drawable/ic_info_black_24dp"
+                android:title="CSCXXX" />
+            <!--<item android:id="@+id/nav_send" android:icon="@android:drawable/ic_menu_send"-->
+                <!--android:title="Send" />-->
+        </menu>
+    </item>
+
+    <item android:title="Communicate">
+        <menu>
+            <item android:id="@+id/nav_share" android:icon="@android:drawable/ic_menu_share"
+                android:title="Share" />
+            <!--<item android:id="@+id/nav_send" android:icon="@android:drawable/ic_menu_send"-->
+            <!--android:title="Send" />-->
+        </menu>
+    </item>
+
+    <group android:id="@+id/group_setting">
+        <item android:id="@+id/setting" android:icon="@android:drawable/ic_menu_manage"
+            android:title="Setting"/>
+
+    </group>
+
+</menu>
