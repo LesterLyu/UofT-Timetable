@@ -6,7 +6,7 @@ A Timetable Android app for University of Toronto.
 <img src="screenshots/1.png" height="400" alt="Screenshot"/> <img src="screenshots/2.png" height="400" alt="Screenshot"/> <img src="screenshots/3.png" height="400" alt="Screenshot"/>
 
 ## Support
-comtact me via lvds2000@gmail.com
+Contact me via lvds2000@gmail.com
 
 ## License
 
