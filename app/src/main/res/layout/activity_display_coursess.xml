@@ -10,9 +10,7 @@
         android:layout_height="wrap_content"
         android:footerDividersEnabled="false"
         android:headerDividersEnabled="false"
-        android:focusable="false"
-        android:animationCache="true"
-
+        android:listSelector="@android:color/transparent"
         android:divider="@android:color/transparent"
         >
 

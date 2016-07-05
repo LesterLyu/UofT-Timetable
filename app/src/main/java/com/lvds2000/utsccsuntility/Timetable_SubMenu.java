@@ -18,8 +18,6 @@ import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.lvds2000.utsccsuntility.A08.A08_Ann;
 import com.lvds2000.utsccsuntility.A08.A08_Exercise;
 import com.lvds2000.utsccsuntility.A20.A20_Ann;
@@ -36,8 +34,6 @@ import java.net.HttpURLConnection;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 public class Timetable_SubMenu extends AppCompatActivity {
 
@@ -170,8 +166,8 @@ public class Timetable_SubMenu extends AppCompatActivity {
 
     private void loadDefaultColor() {
         color = 0;
-        Fragment_Timetable.courseList[index].color=0;
-        System.out.println("Saved color, index=" + index + ", code=" + code + ", color=" +  Fragment_Timetable.courseList[index].color);
+        TimetableFragment.courseList[index].color=0;
+        System.out.println("Saved color, index=" + index + ", code=" + code + ", color=" +  TimetableFragment.courseList[index].color);
         DrawerActivity.saveColor();
 
     }

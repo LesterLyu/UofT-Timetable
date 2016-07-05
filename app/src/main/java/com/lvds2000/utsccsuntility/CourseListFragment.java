@@ -9,13 +9,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import com.lvds2000.entity.Day;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,39 +42,31 @@ public class CourseListFragment extends Fragment {
 
 
         int totalCourseNum = 1;
-        if(Fragment_Timetable.courseList != null)
-            totalCourseNum = Fragment_Timetable.courseList.length;
-
-
-
-
+        if(TimetableFragment.courseList != null)
+            totalCourseNum = TimetableFragment.courseList.length;
         System.out.println("totalCourseNum"+totalCourseNum);
         String[] courseTitle = new String[totalCourseNum];
         String[] courseLeftIcon = new String[totalCourseNum];
         String[] courseName = new String[totalCourseNum];
-        String[][] activityId = new String[3][totalCourseNum];
-        String[][] courseContent = new String[3][totalCourseNum];
-        Map<String, String> courseSeason = new HashMap<>();
-        courseSeason.put("9", " (Fall) ");
-        courseSeason.put("1", " (Winter) ");
-        if(Fragment_Timetable.courseList != null)
+        String[][] activityCode = new String[3][totalCourseNum];
+        String[][] activityContent = new String[3][totalCourseNum];
+        Map<String, String> courseSeasonMap = new HashMap<>();
+        courseSeasonMap.put("9", " (Fall) ");
+        courseSeasonMap.put("1", " (Winter) ");
+        courseSeasonMap.put("91", " (Full) ");
+        if(TimetableFragment.courseList != null)
             for(int i = 0; i < totalCourseNum; i ++){
-                List<com.lvds2000.entity.Activity> activities = new ArrayList<>();
-                if(Fragment_Timetable.courseList[i].getInfo().getPrimaryActivities().size() != 0)
-                    activities.add( Fragment_Timetable.courseList[i].getInfo().getPrimaryActivities().get(0));
-                if(Fragment_Timetable.courseList[i].getInfo().getSecondaryActivities().size() != 0)
-                    activities.add( Fragment_Timetable.courseList[i].getInfo().getSecondaryActivities().get(0));
-                if(Fragment_Timetable.courseList[i].getInfo().getThirdActivities().size() != 0)
-                    activities.add( Fragment_Timetable.courseList[i].getInfo().getThirdActivities().get(0));
-
-                courseTitle[i] = Fragment_Timetable.courseList[i].getCourseCode()+
-                        courseSeason.get(Fragment_Timetable.courseList[i].getRegSessionCode1().substring(4));
-                //Fragment_Timetable.courseList[i].getCourseTitle();
-                // "  "+ Fragment_Timetable.courseList[i].getPrimaryActivityId();
-                // "  "+ Fragment_Timetable.courseList[i].getInfo().getPrimaryActivities().get(0).getDays().get(0).getRoomLocation();
-                courseLeftIcon[i] = Fragment_Timetable.courseList[i].getCourseCode().substring(0,2).toUpperCase();
-                courseName[i] = Fragment_Timetable.courseList[i].getCourseTitle().trim().replaceAll(" +", " ");
-
+                List<com.lvds2000.entity.Activity> activities = TimetableFragment.courseList[i].getActivities();
+                String courseSeasonName;
+                // if the course is "fall"/ "summer"
+                if(TimetableFragment.courseList[i].getRegSessionCode2().equals(""))
+                    courseSeasonName = courseSeasonMap.get(TimetableFragment.courseList[i].getRegSessionCode1().substring(4));
+                else
+                    courseSeasonName = courseSeasonMap.get(TimetableFragment.courseList[i].getRegSessionCode1().substring(4) +
+                            TimetableFragment.courseList[i].getRegSessionCode2().substring(4));
+                courseTitle[i] = TimetableFragment.courseList[i].getCourseCode()+ courseSeasonName;
+                courseLeftIcon[i] = TimetableFragment.courseList[i].getCourseCode().substring(0,2).toUpperCase();
+                courseName[i] = TimetableFragment.courseList[i].getCourseTitle().trim().replaceAll(" +", " ");
 
                 for(int j = 0; j < activities.size(); j++) {
                     String displayTime = "";
@@ -88,8 +78,8 @@ public class CourseListFragment extends Fragment {
                         displayTime = displayTime + location  +
                                 " " + day.getDayOfWeek() + " " + day.getStartTime() + " - " + day.getEndTime()  +"\n";
                     }
-                    activityId[j][i] = activities.get(j).getActivityId();
-                    courseContent[j][i] = displayTime.trim();
+                    activityCode[j][i] = activities.get(j).getActivityId();
+                    activityContent[j][i] = displayTime.trim();
                 }
 
 
@@ -103,7 +93,7 @@ public class CourseListFragment extends Fragment {
             }
         }
 
-        CustomListAdapter1 adapter=new CustomListAdapter1(getActivity(), courseTitle, courseLeftIcon, courseName, activityId, courseContent);
+        CustomListAdapter1 adapter=new CustomListAdapter1(getActivity(), courseTitle, courseLeftIcon, courseName, activityCode, activityContent);
 
         lv.setAdapter(adapter);
 
@@ -127,23 +117,23 @@ public class CourseListFragment extends Fragment {
 class CustomListAdapter1 extends ArrayAdapter<String> {
 
     private final Activity context;
-    private final String[] itemname;
-    private final String[] time;
-    private final String[] imgid;
+    private final String[] courseTitle;
+    private final String[] courseName;
+    private final String[] courseLeftIcon;
     private final String[][] activityId;
     private final String[][] courseContent;
     private Color[] color = new Color[10];
 
 
-    public CustomListAdapter1(Activity context, String[] itemname, String[] imgid, String time[],String[][] activityId, String[][] courseContent) {
-        super(context, R.layout.mylist, itemname);
+    public CustomListAdapter1(Activity context, String[] courseTitle, String[] courseLeftIcon, String courseName[],String[][] activityCode, String[][] activityContent) {
+        super(context, R.layout.mylist, courseTitle);
 
-        this.context=context;
-        this.itemname=itemname;
-        this.imgid=imgid;
-        this.time=time;
-        this.activityId = activityId;
-        this.courseContent = courseContent;
+        this.context = context;
+        this.courseTitle = courseTitle;
+        this.courseLeftIcon = courseLeftIcon;
+        this.courseName = courseName;
+        this.activityId = activityCode;
+        this.courseContent = activityContent;
     }
 
     public View getView(int position,View view,ViewGroup parent) {
@@ -161,10 +151,10 @@ class CustomListAdapter1 extends ArrayAdapter<String> {
         TextView courseContentTV3 = (TextView) rowView.findViewById(R.id.courseContent3);
 
 
-        txtTitle.setText(itemname[position]);
-        leftView.setText(imgid[position]);
+        txtTitle.setText(courseTitle[position]);
+        leftView.setText(courseLeftIcon[position]);
         leftView.setBackgroundColor(pickColor(position));
-        extratxt.setText(time[position]);
+        extratxt.setText(courseName[position]);
         if(activityId[0][position] != null){
             activityIdTV.setText(activityId[0][position]);
             courseContentTV.setText(courseContent[0][position]);

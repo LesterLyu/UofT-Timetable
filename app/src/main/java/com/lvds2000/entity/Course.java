@@ -291,4 +291,15 @@ public class Course {
     public void setColor(int color){
         this.color = color;
     }
+
+    public List<Activity> getActivities() {
+        List<com.lvds2000.entity.Activity> activities = new ArrayList<>();
+        if (getInfo().getPrimaryActivities().size() != 0)
+            activities.add(getInfo().getPrimaryActivities().get(0));
+        if (getInfo().getSecondaryActivities().size() != 0)
+            activities.add(getInfo().getSecondaryActivities().get(0));
+        if (getInfo().getThirdActivities().size() != 0)
+            activities.add(getInfo().getThirdActivities().get(0));
+    return activities;
+    }
 }

@@ -14,6 +14,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.webkit.CookieManager;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
@@ -23,7 +24,6 @@ import android.webkit.WebViewClient;
 import android.widget.ProgressBar;
 
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
@@ -149,6 +149,7 @@ public class DownloadCourses extends AppCompatActivity {
                     System.out.println("Successfully logged in");
                     activity.setTitle("Processing");
                     webView.loadUrl(ACORN_POSTS_JSON_URL);
+                    webView.setVisibility(View.GONE);
                     System.out.println("Retrieving data...");
                     progress = new ProgressDialog(activity);
                     progress.setTitle("Loading");
@@ -222,7 +223,7 @@ public class DownloadCourses extends AppCompatActivity {
                                 running[0] = false;
                                 // cannot be empty json array
                                 if(!courseJson.equals("[]")) {
-                                    Fragment_Timetable.setCourseJson(courseJson);
+                                    TimetableFragment.setCourseJson(courseJson);
                                     // process json
                                     DrawerActivity.saveString("courseJson", courseJson, context);
                                 }

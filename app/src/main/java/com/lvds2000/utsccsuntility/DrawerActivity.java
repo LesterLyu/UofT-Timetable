@@ -56,6 +56,7 @@ public class DrawerActivity extends AppCompatActivity
         currentVersionCode = "" + BuildConfig.VERSION_CODE;
 
         String lastVersionCode = loadString("versionCode", this);
+
         // first time launch or from update
         if(lastVersionCode.equals("") || lastVersionCode.equals("22") ){
             downloadCourses();
@@ -74,8 +75,8 @@ public class DrawerActivity extends AppCompatActivity
         activity = this;
 
         fragment1 = new CourseListFragment();
-        timetable_fall_fragment = Fragment_Timetable.newInstance("fall");
-        timetable_winter_fragment = Fragment_Timetable.newInstance("winter");
+        timetable_fall_fragment = TimetableFragment.newInstance("fall");
+        timetable_winter_fragment = TimetableFragment.newInstance("winter");
         ///
 
         setContentView(R.layout.activity_drawer);
@@ -276,8 +277,8 @@ public class DrawerActivity extends AppCompatActivity
             if (resultCode == Activity.RESULT_CANCELED) {
                 System.out.println("Returned");
                 try {
-                    timetable_fall_fragment = Fragment_Timetable.newInstance("fall");
-                    timetable_winter_fragment = Fragment_Timetable.newInstance("winter");
+                    timetable_fall_fragment = TimetableFragment.newInstance("fall");
+                    timetable_winter_fragment = TimetableFragment.newInstance("winter");
 
                     // reset to fall timetable
                     NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
@@ -333,23 +334,23 @@ public class DrawerActivity extends AppCompatActivity
     }
 
     public static void loadColor(){
-        int totalCourseNum = Fragment_Timetable.courseList.length;
+        int totalCourseNum = TimetableFragment.courseList.length;
         int[] color = loadIntArray("color", c);
         for(int i=0; i<totalCourseNum; i++) {
             try{
-                Fragment_Timetable.courseList[i].color = color[i];
-                System.out.println("Load Color: " + color[i]);
+                TimetableFragment.courseList[i].color = color[i];
+                //System.out.println("Load Color: " + color[i]);
             }catch (Exception e){
-                Fragment_Timetable.courseList[i].color = 0;
+                TimetableFragment.courseList[i].color = 0;
             }
 
         }
     }
     public static void saveColor(){
-        int totalCourseNum = Fragment_Timetable.courseList.length;
+        int totalCourseNum = TimetableFragment.courseList.length;
         int[] color = new int[totalCourseNum];
         for(int i=0; i<totalCourseNum; i++) {
-            color[i] = Fragment_Timetable.courseList[i].color;
+            color[i] = TimetableFragment.courseList[i].color;
         }
         saveIntArray(color, "color", c);
     }
