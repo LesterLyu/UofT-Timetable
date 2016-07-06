@@ -1,5 +1,5 @@
 
-package com.lvds2000.entity;
+package com.lvds2000.entity.plan;
 
 import java.util.ArrayList;
 import java.util.List;

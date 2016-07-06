@@ -14,7 +14,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.webkit.CookieManager;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
@@ -28,6 +27,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
@@ -37,24 +38,30 @@ import javax.crypto.NoSuchPaddingException;
 public class DownloadCourses extends AppCompatActivity {
     private static String ACORN_POSTS_JSON_URL =
             "https://acorn.utoronto.ca/sws/rest/enrolment/eligible-registrations";
-    private static String ACORN_COURSES_JSON_URL =
+    private static String ACORN_PLANNED_COURSES_JSON_URL =
             "https://acorn.utoronto.ca/sws/rest/enrolment/plan";
+    private static String ACORN_ENROLLED_COURSES_JSON_URL =
+            "https://acorn.utoronto.ca/sws/rest/enrolment/course/enrolled-courses";
+    private static String ACORN_ENROLLED_COURSES_JSON_URL_WITH_PARAMS;
+
     WebView webView;
     ProgressBar progressBarbar;
-    Runnable mStatusChecker, mStatusChecker2;
+    Runnable mStatusChecker, mStatusChecker2, mStatusChecker3;
     boolean isRunnableWork = true, isRunnableWork2 = true;
     private Handler mHandler = new Handler();
     private Context context;
     private static ProgressDialog progress;
-    public static String postJson, courseJson;
+    public static String postJson, plannedCourseJson, enrolledCourseJson;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.custom_webview);
         ActionBar actionBar = getSupportActionBar();
-        actionBar.setDisplayHomeAsUpEnabled(true);
-        //Theme setting
-        actionBar.setBackgroundDrawable(getResources().getDrawable(R.drawable.actionbar));
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            //Theme setting
+            actionBar.setBackgroundDrawable(getResources().getDrawable(R.drawable.actionbar));
+        }
         isRunnableWork2 = true;
         isRunnableWork = true;
         webView = (WebView)findViewById(R.id.webView2);
@@ -149,7 +156,7 @@ public class DownloadCourses extends AppCompatActivity {
                     System.out.println("Successfully logged in");
                     activity.setTitle("Processing");
                     webView.loadUrl(ACORN_POSTS_JSON_URL);
-                    webView.setVisibility(View.GONE);
+                    //webView.setVisibility(View.GONE);
                     System.out.println("Retrieving data...");
                     progress = new ProgressDialog(activity);
                     progress.setTitle("Loading");
@@ -163,7 +170,7 @@ public class DownloadCourses extends AppCompatActivity {
 
             @Override
             public void onPageFinished(WebView view, String url) {
-                autoLogin(view, url);
+                autoLogin(url);
                 if(url.equals(ACORN_POSTS_JSON_URL)){
                     // get json data
                     webView.loadUrl("javascript:window.HTMLOUT.processPostJson(document.getElementsByTagName('pre')[0].innerHTML);");
@@ -175,27 +182,51 @@ public class DownloadCourses extends AppCompatActivity {
                                 running[0] = false;
                                 // process json
                                 JsonParser parser = new JsonParser();
-                                final JsonArray jsonArray = parser.parse(postJson).getAsJsonArray();
+                                final JsonArray postJsonArray = parser.parse(postJson).getAsJsonArray();
                                 // if the student has more than one department, let them select which one they want to import.
-                                if(jsonArray.size() > 1){
-                                    CharSequence  department[] = new CharSequence [jsonArray.size()];
-                                    for(int i = 0; i < jsonArray.size(); i ++){
-                                        department[i] = Html.fromHtml(jsonArray.get(i).getAsJsonObject().get("post").getAsJsonObject().get("description").getAsString() + "(" +
-                                                jsonArray.get(i).getAsJsonObject().get("candidacyPostCode").getAsString() + ") " +
-                                                jsonArray.get(i).getAsJsonObject().get("sessionDescription").getAsString());
+                                if(postJsonArray.size() > 1){
+                                    CharSequence  department[] = new CharSequence [postJsonArray.size()];
+                                    for(int i = 0; i < postJsonArray.size(); i ++){
+                                        department[i] = Html.fromHtml(postJsonArray.get(i).getAsJsonObject().get("post").getAsJsonObject().get("description").getAsString() + "(" +
+                                                postJsonArray.get(i).getAsJsonObject().get("candidacyPostCode").getAsString() + ") " +
+                                                postJsonArray.get(i).getAsJsonObject().get("sessionDescription").getAsString());
                                     }
                                     AlertDialog.Builder builder = new AlertDialog.Builder(context);
                                     builder.setCancelable(false);
                                     builder.setTitle("Select one").setItems(department, new DialogInterface.OnClickListener() {
                                         public void onClick(DialogInterface dialog, int which) {
-                                            JsonObject obj = jsonArray.get(which).getAsJsonObject();
+                                            JsonObject obj = postJsonArray.get(which).getAsJsonObject();
                                             String candidacyPostCode = obj.get("candidacyPostCode").getAsString();
                                             String candidacySessionCode = obj.get("candidacySessionCode").getAsString();
                                             String sessionCode = obj.get("sessionCode").getAsString();
-                                            System.out.println(ACORN_COURSES_JSON_URL + "?candidacyPostCode=" + candidacyPostCode +
+                                            System.out.println(ACORN_PLANNED_COURSES_JSON_URL + "?candidacyPostCode=" + candidacyPostCode +
                                                     "&candidacySessionCode=" + candidacySessionCode +
                                                     "&sessionCode=" + sessionCode);
-                                            webView.loadUrl(ACORN_COURSES_JSON_URL + "?candidacyPostCode=" + candidacyPostCode +
+                                            JsonObject registrationParams = obj.get("registrationParams").getAsJsonObject();
+                                            try {
+                                                ACORN_ENROLLED_COURSES_JSON_URL_WITH_PARAMS =
+                                                        ACORN_ENROLLED_COURSES_JSON_URL +
+                                                                "?postCode=" +  URLEncoder.encode(registrationParams.get("postCode").getAsString(), "UTF-8") +
+                                                                "&postDescription=" + URLEncoder.encode(registrationParams.get("postDescription").getAsString(), "UTF-8") +
+                                                                "&sessionCode=" + URLEncoder.encode(registrationParams.get("sessionCode").getAsString(), "UTF-8") +
+                                                                "&sessionDescription=" + URLEncoder.encode(registrationParams.get("sessionDescription").getAsString(), "UTF-8") +
+                                                                "&status=" + URLEncoder.encode(registrationParams.get("status").getAsString(), "UTF-8") +
+                                                                "&assocOrgCode=" + URLEncoder.encode(registrationParams.get("assocOrgCode").getAsString(), "UTF-8") +
+                                                                "&acpDuration=" + URLEncoder.encode(registrationParams.get("acpDuration").getAsString(), "UTF-8") +
+                                                                "&levelOfInstruction=" + URLEncoder.encode(registrationParams.get("levelOfInstruction").getAsString(), "UTF-8") +
+                                                                "&typeOfProgram=" + URLEncoder.encode(registrationParams.get("typeOfProgram").getAsString(), "UTF-8") +
+                                                                "&designationCode1=" + URLEncoder.encode(registrationParams.get("designationCode1").getAsString(), "UTF-8") +
+                                                                "&primaryOrgCode=" + URLEncoder.encode(registrationParams.get("primaryOrgCode").getAsString(), "UTF-8") +
+                                                                "&secondaryOrgCode=" + URLEncoder.encode(registrationParams.get("secondaryOrgCode").getAsString(), "UTF-8") +
+                                                                "&collaborativeOrgCode=" + URLEncoder.encode(registrationParams.get("collaborativeOrgCode").getAsString(), "UTF-8") +
+                                                                "&adminOrgCode=" + URLEncoder.encode(registrationParams.get("adminOrgCode").getAsString(), "UTF-8") +
+                                                                "&coSecondaryOrgCode=" + URLEncoder.encode(registrationParams.get("coSecondaryOrgCode").getAsString(), "UTF-8") +
+                                                                "&yearOfStudy=" + URLEncoder.encode(registrationParams.get("yearOfStudy").getAsString(), "UTF-8") +
+                                                                "&postAcpDuration=" + URLEncoder.encode(registrationParams.get("postAcpDuration").getAsString(), "UTF-8");
+                                            } catch (UnsupportedEncodingException e) {
+                                                e.printStackTrace();
+                                            }
+                                            webView.loadUrl(ACORN_PLANNED_COURSES_JSON_URL + "?candidacyPostCode=" + candidacyPostCode +
                                                     "&candidacySessionCode=" + candidacySessionCode +
                                                     "&sessionCode=" + sessionCode);
                                             dialog.cancel();
@@ -211,49 +242,61 @@ public class DownloadCourses extends AppCompatActivity {
                     mHandler.postDelayed(mStatusChecker, 500);
                     mStatusChecker.run();
                 }
-                else if(url.contains(ACORN_COURSES_JSON_URL)) {
-                    System.out.println("IN ACORN_COURSES_JSON_URL");
+                else if(url.contains(ACORN_PLANNED_COURSES_JSON_URL)) {
+                    System.out.println("IN ACORN_PLANNED_COURSES_JSON_URL");
                     // get json data
-                    webView.loadUrl("javascript:window.HTMLOUT.processCourseJson(document.getElementsByTagName('pre')[0].innerHTML);");
+                    webView.loadUrl("javascript:window.HTMLOUT.processPlannedCourseJson(document.getElementsByTagName('pre')[0].innerHTML);");
                     final boolean[] running = {true};
                     mStatusChecker2 = (new Runnable() {
                         public void run() {
                             System.out.println("Running");
-                            if (running[0] && courseJson != null) {
+                            if (running[0] && plannedCourseJson != null) {
                                 running[0] = false;
                                 // cannot be empty json array
-                                if(!courseJson.equals("[]")) {
-                                    TimetableFragment.setCourseJson(courseJson);
+                                if(!plannedCourseJson.equals("[]")) {
+                                    TimetableFragment.setPlannedCourseJson(plannedCourseJson);
                                     // process json
-                                    DrawerActivity.saveString("courseJson", courseJson, context);
+                                    DrawerActivity.saveString("plannedCourseJson", plannedCourseJson, context);
                                 }
-                                //  clear cookie&cache
-                                CookieManager cookieManager = CookieManager.getInstance();
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                    cookieManager.removeAllCookies(null);
-                                } else {
-                                    cookieManager.removeAllCookie();
-                                }
-                                webView.clearCache(true);
-                                webView.clearFormData();
-                                webView.clearHistory();
-                                webView.clearMatches();
-                                //go back
-                                progress.dismiss();
-                                progress.cancel();
-                                // return
-                                Intent returnIntent = new Intent();
-                                setResult(RESULT_CANCELED, returnIntent);
-                                finish();
+                                System.out.println(ACORN_ENROLLED_COURSES_JSON_URL_WITH_PARAMS);
+                                webView.loadUrl(ACORN_ENROLLED_COURSES_JSON_URL_WITH_PARAMS);
                             }
                         }
                     });
                     mHandler.postDelayed(mStatusChecker2, 500);
-                    mStatusChecker.run();
+                    mStatusChecker2.run();
+                }
+                else if(url.contains(ACORN_ENROLLED_COURSES_JSON_URL)) {
+                    System.out.println("IN ACORN_ENROLLED_COURSES_JSON_URL");
+                    // get json data
+                    webView.loadUrl("javascript:window.HTMLOUT.processEnrolledCourseJson(document.getElementsByTagName('pre')[0].innerHTML);");
+                    final boolean[] running = {true};
+                    mStatusChecker3 = (new Runnable() {
+                        public void run() {
+                            System.out.println("Running");
+                            if (running[0] && enrolledCourseJson != null) {
+                                running[0] = false;
+                                // cannot be empty json array
+                                if(!enrolledCourseJson.equals("{}")) {
+                                    TimetableFragment.setEnrolledCourseJson(enrolledCourseJson);
+                                    // process json
+                                    JsonParser parser = new JsonParser();
+                                    JsonArray jsonArray = parser.parse(enrolledCourseJson).getAsJsonObject().get("APP").getAsJsonArray();
+                                    DrawerActivity.saveString("enrolledCourseJson", jsonArray.getAsString(), context);
+                                }
+                                System.out.println("back");
+                                finishedAndReturn();
+                            }
+                        }
+
+                    });
+
+                    mHandler.postDelayed(mStatusChecker3, 500);
+                    mStatusChecker3.run();
                 }
             }
 
-            public void autoLogin(WebView view, String url){
+            public void autoLogin(String url){
                 System.out.println(cnt + "   " + webView.getContentHeight() + " " + url);
                 String username = DrawerActivity.loadString("username", context);
                 String password = "";
@@ -276,6 +319,28 @@ public class DownloadCourses extends AppCompatActivity {
                     logined = true;
                 }
             }
+            public void finishedAndReturn(){
+                //  clear cookie&cache
+                CookieManager cookieManager = CookieManager.getInstance();
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    cookieManager.removeAllCookies(null);
+                } else {
+                    cookieManager.removeAllCookie();
+                }
+                webView.clearCache(true);
+                webView.clearFormData();
+                webView.clearHistory();
+                webView.clearMatches();
+                //go back
+                progress.dismiss();
+                progress.cancel();
+                // return
+                Intent returnIntent = new Intent();
+                setResult(RESULT_CANCELED, returnIntent);
+                finish();
+            }
+
+
         });
         WebSettings webSettings = webView.getSettings();
         webSettings.setJavaScriptEnabled(true);
@@ -284,11 +349,10 @@ public class DownloadCourses extends AppCompatActivity {
 
     }
 
+
 }
 
 class MyJavaScriptInterface {
-    public static int totalCourseNum;
-    int cnt = 0;
 
     @JavascriptInterface
     @SuppressWarnings("unused")
@@ -299,8 +363,14 @@ class MyJavaScriptInterface {
 
     @JavascriptInterface
     @SuppressWarnings("unused")
-    public void processCourseJson(String html){
+    public void processPlannedCourseJson(String html){
         System.out.println(html);
-        DownloadCourses.courseJson = html;
+        DownloadCourses.plannedCourseJson = html;
+    }
+    @JavascriptInterface
+    @SuppressWarnings("unused")
+    public void processEnrolledCourseJson(String html){
+        System.out.println(html);
+        DownloadCourses.enrolledCourseJson = html;
     }
 }

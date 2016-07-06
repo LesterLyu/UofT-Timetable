@@ -1,5 +1,5 @@
 
-package com.lvds2000.entity;
+package com.lvds2000.entity.plan;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
