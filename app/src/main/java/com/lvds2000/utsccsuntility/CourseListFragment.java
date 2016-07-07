@@ -42,8 +42,8 @@ public class CourseListFragment extends Fragment {
 
 
         int totalCourseNum = 1;
-        if(TimetableFragment.plannedCourseList != null)
-            totalCourseNum = TimetableFragment.plannedCourseList.length;
+        if(TimetableFragment.courseList != null)
+            totalCourseNum = TimetableFragment.courseList.length;
         System.out.println("totalCourseNum"+totalCourseNum);
         String[] courseTitle = new String[totalCourseNum];
         String[] courseLeftIcon = new String[totalCourseNum];
@@ -53,28 +53,30 @@ public class CourseListFragment extends Fragment {
         Map<String, String> courseSeasonMap = new HashMap<>();
         courseSeasonMap.put("9", " (Fall) ");
         courseSeasonMap.put("1", " (Winter) ");
-        courseSeasonMap.put("91", " (Full) ");
-        if(TimetableFragment.plannedCourseList != null)
+        courseSeasonMap.put("91", " (Full Session) ");
+        courseSeasonMap.put("5", " (Summer) ");
+        courseSeasonMap.put("5f", " (Summer First Sub-Session) ");
+        courseSeasonMap.put("5s", " (Summer Second Sub-Session) ");
+        if(TimetableFragment.courseList != null)
             for(int i = 0; i < totalCourseNum; i ++){
-                List<com.lvds2000.entity.plan.Activity> activities = TimetableFragment.plannedCourseList[i].getActivities();
+                List<com.lvds2000.entity.Activity> activities = TimetableFragment.courseList[i].getActivities();
                 String courseSeasonName;
+                //courseSeasonName = courseSeasonMap.get(TimetableFragment.courseList[i].getSectionCode());
                 // if the course is "fall"/ "summer"
-                if(TimetableFragment.plannedCourseList[i].getRegSessionCode2().equals(""))
-                    courseSeasonName = courseSeasonMap.get(TimetableFragment.plannedCourseList[i].getRegSessionCode1().substring(4));
+                if(TimetableFragment.courseList[i].getRegSessionCode2().equals(""))
+                    courseSeasonName = courseSeasonMap.get(TimetableFragment.courseList[i].getRegSessionCode1().substring(4));
                 else
-                    courseSeasonName = courseSeasonMap.get(TimetableFragment.plannedCourseList[i].getRegSessionCode1().substring(4) +
-                            TimetableFragment.plannedCourseList[i].getRegSessionCode2().substring(4));
-                courseTitle[i] = TimetableFragment.plannedCourseList[i].getCourseCode()+ courseSeasonName;
-                courseLeftIcon[i] = TimetableFragment.plannedCourseList[i].getCourseCode().substring(0,2).toUpperCase();
-                courseName[i] = TimetableFragment.plannedCourseList[i].getCourseTitle().trim().replaceAll(" +", " ");
+                    courseSeasonName = courseSeasonMap.get(TimetableFragment.courseList[i].getRegSessionCode1().substring(4) +
+                            TimetableFragment.courseList[i].getRegSessionCode2().substring(4));
+                courseTitle[i] = TimetableFragment.courseList[i].getCourseCode() + courseSeasonName;
+                courseLeftIcon[i] = TimetableFragment.courseList[i].getCourseCode().substring(0,2).toUpperCase();
+                courseName[i] = TimetableFragment.courseList[i].getCourseTitle().trim().replaceAll(" +", " ");
 
                 for(int j = 0; j < activities.size(); j++) {
                     String displayTime = "";
                     for(int k = 0; k < activities.get(j).getDays().size(); k ++){
                         Day day =   activities.get(j).getDays().get(k);
                         String location =  activities.get(j).getDays().get(k).getRoomLocation();
-                        if(location.equals(""))
-                            location = "TBA";
                         displayTime = displayTime + location  +
                                 " " + day.getDayOfWeek() + " " + day.getStartTime() + " - " + day.getEndTime()  +"\n";
                     }

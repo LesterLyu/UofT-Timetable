@@ -3,6 +3,7 @@ package com.lvds2000.entity.plan;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
+import com.lvds2000.entity.enrol.Time;
 
 
 public class Day {
@@ -20,12 +21,21 @@ public class Day {
     @Expose
     private String dayOfWeek;
 
+    public Day(Time time){
+        roomLocation = time.getBuildingCode() + time.getRoom();
+        startTime = time.getStartTime();
+        endTime = time.getEndTime();
+        dayOfWeek = time.getDay().getDayName();
+    }
+
     /**
      * 
      * @return
      *     The roomLocation
      */
     public String getRoomLocation() {
+        if(roomLocation.trim().equals(""))
+            return "TBA";
         return roomLocation;
     }
 

@@ -18,15 +18,15 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.lvds2000.entity.enrol.EnrolledCourse;
+import com.lvds2000.entity.*;
+import com.lvds2000.entity.Course;
 import com.lvds2000.entity.plan.Day;
 import com.lvds2000.entity.plan.PlannedCourse;
 
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -48,24 +48,25 @@ public class TimetableFragment extends Fragment {
     final boolean SHOWALLROWS = false;
     private static Activity activity;
     View view;
-    public static PlannedCourse[] plannedCourseList;
-    public static EnrolledCourse[] enrolledCourseList;
-    private static String plannedCourseJson, enrolledCourseJson;
+    public static com.lvds2000.entity.Course[] courseList;
+    //public static EnrolledCourse[] enrolledCourseList;
+    private static String courseJson;
     private String mode;
     private static final String ARG_PARAM1 = "mode";
 
     public static TimetableFragment newInstance(String mode) {
         activity = DrawerActivity.activity;
-        // load plannedCourseJson from storage
-        System.out.println("plannedCourseJson=" + plannedCourseJson);
-        if(plannedCourseJson == null || plannedCourseJson.equals(""))
-            plannedCourseJson = DrawerActivity.loadString("plannedCourseJson", activity);
-        if(enrolledCourseJson == null || enrolledCourseJson.equals(""))
-            enrolledCourseJson = DrawerActivity.loadString("enrolledCourseJson", activity);
+        // load courseJson from storage
+        System.out.println("courseJson=" + courseJson);
+        if(courseJson == null || courseJson.equals(""))
+            courseJson = DrawerActivity.loadString("courseJson", activity);
+//        if(enrolledCourseJson == null || enrolledCourseJson.equals(""))
+//            enrolledCourseJson = DrawerActivity.loadString("enrolledCourseJson", activity);
+//        System.out.println("enrolledCourseJson=" + enrolledCourseJson);
         Gson gson = new Gson();
 
-        plannedCourseList = gson.fromJson(plannedCourseJson, PlannedCourse[].class);
-        enrolledCourseList = gson.fromJson(enrolledCourseJson, EnrolledCourse[].class);
+        courseList = gson.fromJson(courseJson, com.lvds2000.entity.Course[].class);
+        //enrolledCourseList = gson.fromJson(enrolledCourseJson, EnrolledCourse[].class);
         // Load fragment
         TimetableFragment fragment = new TimetableFragment();
         Bundle args = new Bundle();
@@ -167,8 +168,8 @@ public class TimetableFragment extends Fragment {
                     int colorCode = cd.getColor();
                     String code = selectedTextView.getText().toString().substring(1, 9);
                     int index = 0;
-                    for(int i = 0; i< plannedCourseList.length; i++){
-                        if(plannedCourseList[i].getCourseCode().contains(code)){
+                    for(int i = 0; i< courseList.length; i++){
+                        if(courseList[i].getCourseCode().contains(code)){
                             index = i;
                             break;
                         }
@@ -249,7 +250,7 @@ public class TimetableFragment extends Fragment {
         time2 = SystemClock.currentThreadTimeMillis();
         System.out.println("Delete Rows cost: "+(time2 - time1)+"ms");
         time1 = time2;
-        if(plannedCourseList != null)
+        if(courseList != null)
             refreshCeil();
 
         time2 = SystemClock.currentThreadTimeMillis();
@@ -263,23 +264,23 @@ public class TimetableFragment extends Fragment {
         DateFormat format = new SimpleDateFormat("hh:mma", Locale.CANADA);
         // fall earliest, fall latest, winter earliest, winter latest
         Date[] time = {format.parse("11:59PM"), format.parse("00:01AM"), format.parse("11:59PM"), format.parse("00:01AM")};
-        for(PlannedCourse plannedCourse : plannedCourseList){
+        for(com.lvds2000.entity.Course course : courseList){
             //System.out.println(plannedCourse.getCourseCode());
-            List<com.lvds2000.entity.plan.Activity> activities = plannedCourse.getActivities();
-            for(com.lvds2000.entity.plan.Activity activity: activities){
+            List<com.lvds2000.entity.Activity> activities = course.getActivities();
+            for(com.lvds2000.entity.Activity activity: activities){
                 if(activity.getDays() != null)
                     for(Day day: activity.getDays()){
                         Date startTime = null;
                         Date endTime = null;
                         startTime = format.parse(day.getStartTime());
                         endTime = format.parse(day.getEndTime());
-                        if(plannedCourse.getSectionCode().equalsIgnoreCase("F") || plannedCourse.getSectionCode().equalsIgnoreCase("Y")){
+                        if(course.getSectionCode().equalsIgnoreCase("F") || course.getSectionCode().equalsIgnoreCase("Y")){
                             if(startTime.before(time[0]))
                                 time[0] = startTime;
                             if(endTime.after(time[1]))
                                 time[1] = endTime;
                         }
-                        else if(plannedCourse.getSectionCode().equalsIgnoreCase("S") || plannedCourse.getSectionCode().equalsIgnoreCase("Y")){
+                        if(course.getSectionCode().equalsIgnoreCase("S") || course.getSectionCode().equalsIgnoreCase("Y")){
                             if(startTime.before(time[2]))
                                 time[2] = startTime;
                             if(endTime.after(time[3]))
@@ -287,6 +288,12 @@ public class TimetableFragment extends Fragment {
                         }
                     }
             }
+        }
+        if(time[1].getHours() - time[0].getHours() < 9){
+            time[0].setHours(time[1].getHours() - 9);
+        }
+        if(time[3].getHours() - time[2].getHours() < 9){
+            time[2].setHours(time[3].getHours() - 9);
         }
         return time;
     }
@@ -321,15 +328,15 @@ public class TimetableFragment extends Fragment {
                     selectedTextView.setBackgroundColor(color);
                     String code = selectedTextView.getText().toString().substring(1, 9);
                     int index = 0;
-                    for(int i = 0; i< plannedCourseList.length; i++){
-                        if(plannedCourseList[i].getCourseCode().contains(code)){
+                    for(int i = 0; i< courseList.length; i++){
+                        if(courseList[i].getCourseCode().contains(code)){
                             index = i;
                             break;
                         }
                     }
-                    plannedCourseList[index].color = color;
+                    courseList[index].color = color;
                     DrawerActivity.saveColor();
-                    System.out.println("Saved color, index=" + index + ", code=" + code + ", color=" + plannedCourseList[index].color);
+                    System.out.println("Saved color, index=" + index + ", code=" + code + ", color=" + courseList[index].color);
 
                 }
                 refreshCeil();
@@ -337,7 +344,7 @@ public class TimetableFragment extends Fragment {
         }
     }//onActivityResult
 
-    public void addContent(float row, float col, float rowspan, String content, PlannedCourse plannedCourse, int courseNum){
+    public void addContent(float row, float col, float rowspan, String content, Course course, int courseNum){
         int row_int = (int)row;
         int col_int = (int)col;
         int rowspan_int = (int)Math.ceil(rowspan + getDecimal(row));
@@ -374,9 +381,9 @@ public class TimetableFragment extends Fragment {
         }
         ll[row_int][col_int].setLayoutParams(param);
         tv[row_int][col_int].setText(content);
-        if(plannedCourseList[courseNum].color != 0){
-            tv[row_int][col_int].setBackgroundColor(plannedCourseList[courseNum].color);
-            //System.out.println("Set Color: " + plannedCourseList[courseNum].color);
+        if(courseList[courseNum].color != 0){
+            tv[row_int][col_int].setBackgroundColor(courseList[courseNum].color);
+            //System.out.println("Set Color: " + courseList[courseNum].color);
         }
         else {
             tv[row_int][col_int].setBackgroundColor(pickColor(courseNum));
@@ -390,12 +397,12 @@ public class TimetableFragment extends Fragment {
         float[]  startTime = new float[20], endTime = new float[20], weekNum = new float[20];
         // new
         int courseNum = 0;
-        for(PlannedCourse plannedCourse : plannedCourseList){
-            if(plannedCourse.getSectionCode().equalsIgnoreCase("F") && mode.equals("fall") ||
-                    plannedCourse.getSectionCode().equalsIgnoreCase("S") && mode.equals("winter") ||
-                    plannedCourse.getSectionCode().equalsIgnoreCase("Y")) {
-                List<com.lvds2000.entity.plan.Activity> activities = plannedCourse.getActivities();
-                for(com.lvds2000.entity.plan.Activity activity: activities) {
+        for(com.lvds2000.entity.Course course : courseList){
+            if(course.getSectionCode().equalsIgnoreCase("F") && mode.equals("fall") ||
+                    course.getSectionCode().equalsIgnoreCase("S") && mode.equals("winter") ||
+                    course.getSectionCode().equalsIgnoreCase("Y")) {
+                List<com.lvds2000.entity.Activity> activities = course.getActivities();
+                for(com.lvds2000.entity.Activity activity: activities) {
                     if (activity != null)
                         for (Day day : activity.getDays()) {
                             Map<String, Integer> dayToNum = new HashMap<String, Integer>();
@@ -404,9 +411,9 @@ public class TimetableFragment extends Fragment {
                             dayToNum.put("Wednesday", 3);
                             dayToNum.put("Thursday", 4);
                             dayToNum.put("Friday", 5);
-                            Map<String, String> enrollmentMap = new HashMap<String, String>();
-                            enrollmentMap.put("true", "");
-                            enrollmentMap.put("false", "*not enrolled");
+                            Map<Boolean, String> enrollmentMap = new HashMap<Boolean, String>();
+                            enrollmentMap.put(true, "");
+                            enrollmentMap.put(false, "*not enrolled");
                             //System.out.println(day.getDayOfWeek());
                             weekNum[courseNum] = dayToNum.get(day.getDayOfWeek());
                             enrollment[courseNum] = enrollmentMap.get(activity.getEnroled());
@@ -419,13 +426,13 @@ public class TimetableFragment extends Fragment {
                                 e.printStackTrace();
                             }
 
-                            contentCourse[courseNum] = " " + plannedCourse.getCourseCode() + "\n "
+                            contentCourse[courseNum] = " " + course.getCourseCode() + "\n "
                                     + activity.getActivityId() + "\n "
                                     + day.getRoomLocation() + "\n "
                                     + enrollment[courseNum];
                             addContent(startTime[courseNum], weekNum[courseNum],
                                     endTime[courseNum] - startTime[courseNum],
-                                    contentCourse[courseNum], plannedCourseList[courseNum],
+                                    contentCourse[courseNum], courseList[courseNum],
                                     courseNum);
                         }
                 }
@@ -492,11 +499,8 @@ public class TimetableFragment extends Fragment {
         super.onDetach();
     }
 
-    public static void setPlannedCourseJson(String plannedCourseJson){
-        TimetableFragment.plannedCourseJson = plannedCourseJson;
-    }
-    public static void setEnrolledCourseJson(String enrolledCourseJson){
-        TimetableFragment.enrolledCourseJson = enrolledCourseJson;
+    public static void setCourseJson(String courseJson){
+        TimetableFragment.courseJson = courseJson;
     }
 
 }

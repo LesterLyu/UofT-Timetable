@@ -166,8 +166,8 @@ public class Timetable_SubMenu extends AppCompatActivity {
 
     private void loadDefaultColor() {
         color = 0;
-        TimetableFragment.plannedCourseList[index].color=0;
-        System.out.println("Saved color, index=" + index + ", code=" + code + ", color=" +  TimetableFragment.plannedCourseList[index].color);
+        TimetableFragment.courseList[index].color=0;
+        System.out.println("Saved color, index=" + index + ", code=" + code + ", color=" +  TimetableFragment.courseList[index].color);
         DrawerActivity.saveColor();
 
     }

@@ -22,9 +22,14 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ProgressBar;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.lvds2000.entity.*;
+import com.lvds2000.entity.Course;
+import com.lvds2000.entity.enrol.EnrolledCourse;
+import com.lvds2000.entity.plan.PlannedCourse;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -32,6 +37,8 @@ import java.net.URLEncoder;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.crypto.NoSuchPaddingException;
 
@@ -52,6 +59,8 @@ public class DownloadCourses extends AppCompatActivity {
     private Context context;
     private static ProgressDialog progress;
     public static String postJson, plannedCourseJson, enrolledCourseJson;
+    List<Course> courseList = new ArrayList<Course>();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -254,9 +263,15 @@ public class DownloadCourses extends AppCompatActivity {
                                 running[0] = false;
                                 // cannot be empty json array
                                 if(!plannedCourseJson.equals("[]")) {
-                                    TimetableFragment.setPlannedCourseJson(plannedCourseJson);
+                                    Gson gson = new Gson();
+                                    PlannedCourse[] plannedCourseList = gson.fromJson(plannedCourseJson, PlannedCourse[].class);
+                                    for(PlannedCourse plannedCourse: plannedCourseList){
+                                        courseList.add(new Course(plannedCourse));
+                                    }
+
+                                    //TimetableFragment.setCourseJson(plannedCourseJson);
                                     // process json
-                                    DrawerActivity.saveString("plannedCourseJson", plannedCourseJson, context);
+                                    //DrawerActivity.saveString("plannedCourseJson", plannedCourseJson, context);
                                 }
                                 System.out.println(ACORN_ENROLLED_COURSES_JSON_URL_WITH_PARAMS);
                                 webView.loadUrl(ACORN_ENROLLED_COURSES_JSON_URL_WITH_PARAMS);
@@ -276,14 +291,24 @@ public class DownloadCourses extends AppCompatActivity {
                             System.out.println("Running");
                             if (running[0] && enrolledCourseJson != null) {
                                 running[0] = false;
+                                Gson gson = new Gson();
                                 // cannot be empty json array
                                 if(!enrolledCourseJson.equals("{}")) {
-                                    TimetableFragment.setEnrolledCourseJson(enrolledCourseJson);
                                     // process json
                                     JsonParser parser = new JsonParser();
                                     JsonArray jsonArray = parser.parse(enrolledCourseJson).getAsJsonObject().get("APP").getAsJsonArray();
-                                    DrawerActivity.saveString("enrolledCourseJson", jsonArray.getAsString(), context);
+
+
+                                    EnrolledCourse[] enrolledCourseList = gson.fromJson(jsonArray, EnrolledCourse[].class);
+                                    for(EnrolledCourse enrolledCourse: enrolledCourseList){
+                                        courseList.add(new Course(enrolledCourse));
+                                    }
+
                                 }
+                                String json =  gson.toJson(courseList);
+                                TimetableFragment.setCourseJson(json);
+                                DrawerActivity.saveString("courseJson", json, context);
+                                System.out.println(json);
                                 System.out.println("back");
                                 finishedAndReturn();
                             }

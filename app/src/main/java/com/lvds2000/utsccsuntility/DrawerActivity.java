@@ -334,23 +334,23 @@ public class DrawerActivity extends AppCompatActivity
     }
 
     public static void loadColor(){
-        int totalCourseNum = TimetableFragment.plannedCourseList.length;
+        int totalCourseNum = TimetableFragment.courseList.length;
         int[] color = loadIntArray("color", c);
         for(int i=0; i<totalCourseNum; i++) {
             try{
-                TimetableFragment.plannedCourseList[i].color = color[i];
+                TimetableFragment.courseList[i].color = color[i];
                 //System.out.println("Load Color: " + color[i]);
             }catch (Exception e){
-                TimetableFragment.plannedCourseList[i].color = 0;
+                TimetableFragment.courseList[i].color = 0;
             }
 
         }
     }
     public static void saveColor(){
-        int totalCourseNum = TimetableFragment.plannedCourseList.length;
+        int totalCourseNum = TimetableFragment.courseList.length;
         int[] color = new int[totalCourseNum];
         for(int i=0; i<totalCourseNum; i++) {
-            color[i] = TimetableFragment.plannedCourseList[i].color;
+            color[i] = TimetableFragment.courseList[i].color;
         }
         saveIntArray(color, "color", c);
     }
