@@ -78,17 +78,25 @@ public class Course {
         courseCode = enrolledCourse.getCode();
         sectionCode = enrolledCourse.getSectionCode();
         courseTitle = enrolledCourse.getTitle();
-        primaryActivityId = enrolledCourse.getPrimaryTeachMethod() + " " + enrolledCourse.getPrimarySectionNo();
+
+        if(enrolledCourse.getStatus().equals("APP"))
+            // Enrolled
+            primaryActivityId = enrolledCourse.getPrimaryTeachMethod() + " " + enrolledCourse.getPrimarySectionNo();
+        else
+            // Waitlisted
+            primaryActivityId = enrolledCourse.getWaitlistTeachMethod() + " " + enrolledCourse.getWaitlistSectionNo().trim();
         secondaryActivityId = enrolledCourse.getSecondaryTeachMethod1() + " " + enrolledCourse.getSecondaryTeachMethod1();
         thirdActivityId = enrolledCourse.getSecondaryTeachMethod2() + " " + enrolledCourse.getSecondarySectionNo2();
         regSessionCode1 = enrolledCourse.getRegSessionCode1();
         regSessionCode2 = enrolledCourse.getRegSessionCode2();
         regSessionCode3 = enrolledCourse.getRegSessionCode3();
-        for(Meeting meeting: enrolledCourse.getMeetings()){
-            activities.add(new Activity(meeting));
-        }
 
-
+            for(Meeting meeting: enrolledCourse.getMeetings()) {
+                if(enrolledCourse.getStatus().equals("APP"))
+                    activities.add(new Activity(meeting, false));
+                else if(meeting.getSectionNo().trim().equals(enrolledCourse.getWaitlistSectionNo().trim()))
+                    activities.add(new Activity(meeting, true));
+            }
     }
 
 

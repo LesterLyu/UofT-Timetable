@@ -40,15 +40,22 @@ public class Activity {
             waitlistRank = 0;
         }
     }
-    Activity(Meeting meeting){
+
+    /**
+     * for enrolled and waitlisted courses
+     * @param meeting the activity
+     * @param isWaitlisted if this activity is in a waiting list
+     */
+    Activity(Meeting meeting, boolean isWaitlisted){
         activityId = meeting.getDisplayName();
-        enroled = meeting.getWaitlistRank() == 0;
+        enroled = !isWaitlisted;
         commaSeparatedInstructorNames = meeting.getCommaSeparatedInstructorNames();
         for(Time time: meeting.getTimes()){
             days.add(new Day(time));
         }
         waitlistRank = meeting.getWaitlistRank();
     }
+
 
     /**
      * 
