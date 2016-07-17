@@ -209,40 +209,7 @@ public class DownloadCourses extends AppCompatActivity {
                                 builder.setCancelable(false);
                                 builder.setTitle("Select one").setItems(department, new DialogInterface.OnClickListener() {
                                     public void onClick(DialogInterface dialog, int which) {
-                                        JsonObject obj = postJsonArray.get(which).getAsJsonObject();
-                                        String candidacyPostCode = obj.get("candidacyPostCode").getAsString();
-                                        String candidacySessionCode = obj.get("candidacySessionCode").getAsString();
-                                        String sessionCode = obj.get("sessionCode").getAsString();
-                                        System.out.println(ACORN_PLANNED_COURSES_JSON_URL + "?candidacyPostCode=" + candidacyPostCode +
-                                                "&candidacySessionCode=" + candidacySessionCode +
-                                                "&sessionCode=" + sessionCode);
-                                        JsonObject registrationParams = obj.get("registrationParams").getAsJsonObject();
-                                        try {
-                                            ACORN_ENROLLED_COURSES_JSON_URL_WITH_PARAMS =
-                                                    ACORN_ENROLLED_COURSES_JSON_URL +
-                                                            "?postCode=" +  URLEncoder.encode(registrationParams.get("postCode").getAsString(), "UTF-8") +
-                                                            "&postDescription=" + URLEncoder.encode(registrationParams.get("postDescription").getAsString(), "UTF-8") +
-                                                            "&sessionCode=" + URLEncoder.encode(registrationParams.get("sessionCode").getAsString(), "UTF-8") +
-                                                            "&sessionDescription=" + URLEncoder.encode(registrationParams.get("sessionDescription").getAsString(), "UTF-8") +
-                                                            "&status=" + URLEncoder.encode(registrationParams.get("status").getAsString(), "UTF-8") +
-                                                            "&assocOrgCode=" + URLEncoder.encode(registrationParams.get("assocOrgCode").getAsString(), "UTF-8") +
-                                                            "&acpDuration=" + URLEncoder.encode(registrationParams.get("acpDuration").getAsString(), "UTF-8") +
-                                                            "&levelOfInstruction=" + URLEncoder.encode(registrationParams.get("levelOfInstruction").getAsString(), "UTF-8") +
-                                                            "&typeOfProgram=" + URLEncoder.encode(registrationParams.get("typeOfProgram").getAsString(), "UTF-8") +
-                                                            "&designationCode1=" + URLEncoder.encode(registrationParams.get("designationCode1").getAsString(), "UTF-8") +
-                                                            "&primaryOrgCode=" + URLEncoder.encode(registrationParams.get("primaryOrgCode").getAsString(), "UTF-8") +
-                                                            "&secondaryOrgCode=" + URLEncoder.encode(registrationParams.get("secondaryOrgCode").getAsString(), "UTF-8") +
-                                                            "&collaborativeOrgCode=" + URLEncoder.encode(registrationParams.get("collaborativeOrgCode").getAsString(), "UTF-8") +
-                                                            "&adminOrgCode=" + URLEncoder.encode(registrationParams.get("adminOrgCode").getAsString(), "UTF-8") +
-                                                            "&coSecondaryOrgCode=" + URLEncoder.encode(registrationParams.get("coSecondaryOrgCode").getAsString(), "UTF-8") +
-                                                            "&yearOfStudy=" + URLEncoder.encode(registrationParams.get("yearOfStudy").getAsString(), "UTF-8") +
-                                                            "&postAcpDuration=" + URLEncoder.encode(registrationParams.get("postAcpDuration").getAsString(), "UTF-8");
-                                        } catch (UnsupportedEncodingException e) {
-                                            e.printStackTrace();
-                                        }
-                                        webView.loadUrl(ACORN_PLANNED_COURSES_JSON_URL + "?candidacyPostCode=" + candidacyPostCode +
-                                                "&candidacySessionCode=" + candidacySessionCode +
-                                                "&sessionCode=" + sessionCode);
+                                        processPostData(postJsonArray, which);
                                         dialog.cancel();
                                     }
                                 });
@@ -252,6 +219,9 @@ public class DownloadCourses extends AppCompatActivity {
                                         dialog.show();
                                     }
                                 });
+                            }
+                            else{
+                                processPostData(postJsonArray, 0);
                             }
                         }
                     });
@@ -322,7 +292,7 @@ public class DownloadCourses extends AppCompatActivity {
                                 for(EnrolledCourse enrolledCourse: enrolledCourseList){
                                     courseList.add(new Course(enrolledCourse));
                                 }
-                                if(!courseJsonObject.has("WAIT")) {
+                                if(courseJsonObject.has("WAIT")) {
                                     jsonArrayWAIT = courseJsonObject.get("WAIT").getAsJsonArray();
                                     waitlistedCourseList = gson.fromJson(jsonArrayWAIT, EnrolledCourse[].class);
                                     for (EnrolledCourse waitlistedCourse : waitlistedCourseList) {
@@ -346,21 +316,19 @@ public class DownloadCourses extends AppCompatActivity {
                 }
             }
 
-            public void autoLogin(String url){
-                System.out.println(cnt + "   " + webView.getContentHeight() + " " + url);
-                String username = DrawerActivity.loadString("username", context);
-                String password = "";
-                try {
-                    StringEncryptor encryptor = new StringEncryptor(context);
-                    password = encryptor.decrypt("pass");
-                } catch (NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeySpecException | InvalidKeyException e) {
-                    e.printStackTrace();
-                }
-                System.out.println("Javascript enabled:" + webView.getSettings().getJavaScriptEnabled());
-
+            public void autoLogin(String url) {
                 // This is the automatic enter username/password part
                 if (!logined && url.contains("https://weblogin.utoronto.ca") && DrawerActivity.loadBoolean("auto_login", context)) {
                     System.out.println("Set username");
+                    System.out.println(cnt + "   " + webView.getContentHeight() + " " + url);
+                    String username = DrawerActivity.loadString("username", context);
+                    String password = "";
+                    try {
+                        StringEncryptor encryptor = new StringEncryptor(context);
+                        password = encryptor.decrypt("pass");
+                    } catch (NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeySpecException | InvalidKeyException e) {
+                        e.printStackTrace();
+                    }
                     webView.loadUrl("javascript:(function(){\n" +
                             "  document.getElementById('inputID').value='" + username + "';\n" +
                             "  document.getElementById('inputPassword').value='" + password + "';\n" +
@@ -369,6 +337,48 @@ public class DownloadCourses extends AppCompatActivity {
                     logined = true;
                 }
             }
+            private void processPostData(JsonArray postJsonArray, int index){
+                JsonObject obj = postJsonArray.get(index).getAsJsonObject();
+                final String candidacyPostCode = obj.get("candidacyPostCode").getAsString();
+                final String candidacySessionCode = obj.get("candidacySessionCode").getAsString();
+                final String sessionCode = obj.get("sessionCode").getAsString();
+                System.out.println(ACORN_PLANNED_COURSES_JSON_URL + "?candidacyPostCode=" + candidacyPostCode +
+                        "&candidacySessionCode=" + candidacySessionCode +
+                        "&sessionCode=" + sessionCode);
+                JsonObject registrationParams = obj.get("registrationParams").getAsJsonObject();
+                try {
+                    ACORN_ENROLLED_COURSES_JSON_URL_WITH_PARAMS =
+                            ACORN_ENROLLED_COURSES_JSON_URL +
+                                    "?postCode=" +  URLEncoder.encode(registrationParams.get("postCode").getAsString(), "UTF-8") +
+                                    "&postDescription=" + URLEncoder.encode(registrationParams.get("postDescription").getAsString(), "UTF-8") +
+                                    "&sessionCode=" + URLEncoder.encode(registrationParams.get("sessionCode").getAsString(), "UTF-8") +
+                                    "&sessionDescription=" + URLEncoder.encode(registrationParams.get("sessionDescription").getAsString(), "UTF-8") +
+                                    "&status=" + URLEncoder.encode(registrationParams.get("status").getAsString(), "UTF-8") +
+                                    "&assocOrgCode=" + URLEncoder.encode(registrationParams.get("assocOrgCode").getAsString(), "UTF-8") +
+                                    "&acpDuration=" + URLEncoder.encode(registrationParams.get("acpDuration").getAsString(), "UTF-8") +
+                                    "&levelOfInstruction=" + URLEncoder.encode(registrationParams.get("levelOfInstruction").getAsString(), "UTF-8") +
+                                    "&typeOfProgram=" + URLEncoder.encode(registrationParams.get("typeOfProgram").getAsString(), "UTF-8") +
+                                    "&designationCode1=" + URLEncoder.encode(registrationParams.get("designationCode1").getAsString(), "UTF-8") +
+                                    "&primaryOrgCode=" + URLEncoder.encode(registrationParams.get("primaryOrgCode").getAsString(), "UTF-8") +
+                                    "&secondaryOrgCode=" + URLEncoder.encode(registrationParams.get("secondaryOrgCode").getAsString(), "UTF-8") +
+                                    "&collaborativeOrgCode=" + URLEncoder.encode(registrationParams.get("collaborativeOrgCode").getAsString(), "UTF-8") +
+                                    "&adminOrgCode=" + URLEncoder.encode(registrationParams.get("adminOrgCode").getAsString(), "UTF-8") +
+                                    "&coSecondaryOrgCode=" + URLEncoder.encode(registrationParams.get("coSecondaryOrgCode").getAsString(), "UTF-8") +
+                                    "&yearOfStudy=" + URLEncoder.encode(registrationParams.get("yearOfStudy").getAsString(), "UTF-8") +
+                                    "&postAcpDuration=" + URLEncoder.encode(registrationParams.get("postAcpDuration").getAsString(), "UTF-8");
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                }
+                activity.runOnUiThread(new Runnable() {
+                    public void run() {
+                        webView.loadUrl(ACORN_PLANNED_COURSES_JSON_URL + "?candidacyPostCode=" + candidacyPostCode +
+                                "&candidacySessionCode=" + candidacySessionCode +
+                                "&sessionCode=" + sessionCode);
+                    }
+                });
+
+            }
+
             public void finishedAndReturn(){
                 //  clear cookie&cache
                 CookieManager cookieManager = CookieManager.getInstance();
