@@ -9,9 +9,11 @@ A Timetable Android app for University of Toronto.
 Contact me via lvds2000@gmail.com
 
 ## TODO
--Show conflicts
--Support summer timetable
--Show course info(description) in a better way
+ - Show conflicts
+
+ - Support summer timetable
+ 
+ - Show course info(description) in a better way
 
 ## License
 
