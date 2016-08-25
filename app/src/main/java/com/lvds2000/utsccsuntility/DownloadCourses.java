@@ -13,6 +13,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.webkit.CookieManager;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
@@ -36,6 +37,8 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import javax.crypto.NoSuchPaddingException;
@@ -160,7 +163,7 @@ public class DownloadCourses extends AppCompatActivity {
                     System.out.println("Successfully logged in");
                     activity.setTitle("Processing");
                     webView.loadUrl(ACORN_POSTS_JSON_URL);
-                    //webView.setVisibility(View.GONE);
+                    webView.setVisibility(View.GONE);
                     System.out.println("Retrieving data...");
                     progress = new ProgressDialog(activity);
                     progress.setTitle("Loading");
@@ -290,7 +293,7 @@ public class DownloadCourses extends AppCompatActivity {
                                 jsonArrayAPP = courseJsonObject.get("APP").getAsJsonArray();
                                 enrolledCourseList = gson.fromJson(jsonArrayAPP, EnrolledCourse[].class);
                                 for(EnrolledCourse enrolledCourse: enrolledCourseList){
-                                    courseList.add(new Course(enrolledCourse));
+                                    courseList.add(0, new Course(enrolledCourse));
                                 }
                                 if(courseJsonObject.has("WAIT")) {
                                     jsonArrayWAIT = courseJsonObject.get("WAIT").getAsJsonArray();
@@ -300,6 +303,22 @@ public class DownloadCourses extends AppCompatActivity {
                                     }
                                 }
                             }
+                            // sort the courseList
+                            Collections.sort(courseList, new Comparator<Course>() {
+                                @Override
+                                public int compare(Course o1, Course o2) {
+                                    if(o1.getSectionCode().equalsIgnoreCase("S") && (o2.getSectionCode().equalsIgnoreCase("Y") || o2.getSectionCode().equalsIgnoreCase("F")))
+                                        return 1;
+                                    else if(o1.getSectionCode().equalsIgnoreCase("Y") && o2.getSectionCode().equalsIgnoreCase("F"))
+                                        return 1;
+                                    else if(!o1.getSectionCode().equalsIgnoreCase(o2.getSectionCode()))
+                                        return -1;
+                                    else{
+                                        return o1.getCourseCode().compareToIgnoreCase(o2.getCourseCode());
+                                    }
+                                }
+                            });
+
                             String json =  gson.toJson(courseList);
                             TimetableFragment.setCourseJson(json);
                             DrawerActivity.saveString("courseJson", json, context);

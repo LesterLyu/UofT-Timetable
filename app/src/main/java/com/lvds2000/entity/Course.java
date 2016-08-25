@@ -99,7 +99,10 @@ public class Course {
             }
     }
 
-
+    /**
+     *
+     * @return e.g. CSC108H3
+     */
     public String getCourseCode() {
         return courseCode;
     }

@@ -8,6 +8,11 @@ A Timetable Android app for University of Toronto.
 ## Support
 Contact me via lvds2000@gmail.com
 
+## TODO
+-Show conflicts
+-Support summer timetable
+-Show course info(description) in a better way
+
 ## License
 
 http://www.apache.org/licenses/LICENSE-2.0

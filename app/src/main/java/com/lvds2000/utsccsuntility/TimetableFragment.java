@@ -18,15 +18,12 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.google.gson.Gson;
-import com.lvds2000.entity.*;
 import com.lvds2000.entity.Course;
 import com.lvds2000.entity.plan.Day;
-import com.lvds2000.entity.plan.PlannedCourse;
 
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -289,11 +286,11 @@ public class TimetableFragment extends Fragment {
                     }
             }
         }
-        if(time[1].getHours() - time[0].getHours() < 9){
-            time[0].setHours(time[1].getHours() - 9);
+        if(time[1].getHours() - time[0].getHours() < 8){
+            time[1].setHours(time[0].getHours() + 8);
         }
-        if(time[3].getHours() - time[2].getHours() < 9){
-            time[2].setHours(time[3].getHours() - 9);
+        if(time[3].getHours() - time[2].getHours() < 8){
+            time[3].setHours(time[2].getHours() + 8);
         }
         return time;
     }

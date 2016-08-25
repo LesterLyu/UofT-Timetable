@@ -21,12 +21,15 @@ import android.view.SubMenu;
 import android.view.View;
 import android.widget.TextView;
 
+import com.google.gson.Gson;
 import com.lvds2000.utsccsuntility.A08.DisplayCSCA08;
 import com.lvds2000.utsccsuntility.A20.DisplayCSCA20;
 import com.lvds2000.utsccsuntility.A48.InfoActivity;
 import com.lvds2000.utsccsuntility.A67.DisplayCSCA67;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
 public class DrawerActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -42,16 +45,17 @@ public class DrawerActivity extends AppCompatActivity
     public static Activity activity;
     private static Handler handler = new Handler();
     private static String mTitle = "Winter timetable";
-    private static Context c;
     private static boolean initialized = false;
     public static boolean DEBUG = false, isFall = true;
     private static Menu navi_menu;
     private static SubMenu menu_extra_info;
     public static String versionName, currentVersionCode;
+
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        c = this;
+        // check version and do some task if the version is...
         versionName = BuildConfig.VERSION_NAME;
         currentVersionCode = "" + BuildConfig.VERSION_CODE;
 
@@ -61,10 +65,7 @@ public class DrawerActivity extends AppCompatActivity
         if(lastVersionCode.equals("") || lastVersionCode.equals("22") ){
             downloadCourses();
         }
-
         DEBUG = loadBoolean("debug_switch", this);
-
-
 
 
         displaymetrics = new DisplayMetrics();
@@ -77,7 +78,6 @@ public class DrawerActivity extends AppCompatActivity
         fragment1 = new CourseListFragment();
         timetable_fall_fragment = TimetableFragment.newInstance("fall");
         timetable_winter_fragment = TimetableFragment.newInstance("winter");
-        ///
 
         setContentView(R.layout.activity_drawer);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -97,24 +97,38 @@ public class DrawerActivity extends AppCompatActivity
         fragmentManager = getSupportFragmentManager();
 
         navi_menu = navigationView.getMenu();
-        // version code
+        // set version code
         View headerView = navigationView.getHeaderView(0);
         TextView versionText = (TextView) headerView.findViewById(R.id.versionText);
         versionText.setText("version " + versionName);
 
-        // default timetable
-        String defaultTimetable = loadString("defaultTimetable", c);
+        super.onCreate(savedInstanceState);
+        if(savedInstanceState == null) {
+            // default timetable
+            String defaultTimetable = loadString("defaultTimetable", activity);
 
-        if(defaultTimetable.equals("0")) {
-            fragmentManager.beginTransaction().replace(R.id.flContent, timetable_fall_fragment).commit();
-            setTitle("Fall timetable");
-            navi_menu.getItem(1).setChecked(true);
+            if (defaultTimetable.equals("0")) {
+                fragmentManager.beginTransaction().replace(R.id.flContent, timetable_fall_fragment).commit();
+                setTitle("Fall timetable");
+                navi_menu.getItem(1).setChecked(true);
+            } else {
+                fragmentManager.beginTransaction().replace(R.id.flContent, timetable_winter_fragment).commit();
+                setTitle("Winter timetable");
+                navi_menu.getItem(2).setChecked(true);
+                isFall = false;
+            }
         }
+        // restore from a destroyed activity
         else{
-            fragmentManager.beginTransaction().replace(R.id.flContent, timetable_winter_fragment).commit();
-            setTitle("Winter timetable");
-            navi_menu.getItem(2).setChecked(true);
-            isFall = false;
+            if(navi_menu.getItem(0).isChecked()){
+                setTitle("Course List");
+            }
+            else if(navi_menu.getItem(1).isChecked()){
+                setTitle("Fall timetable");
+            }
+            else if(navi_menu.getItem(1).isChecked()){
+                setTitle("Winter timetable");
+            }
         }
         // optional course info
         menu_extra_info = navi_menu.getItem(4).getSubMenu();
@@ -126,6 +140,7 @@ public class DrawerActivity extends AppCompatActivity
             AnalyticsTrackers.initialize(this);
         initialized = true;
         AnalyticsTrackers.getInstance().get(AnalyticsTrackers.Target.APP);
+
     }
 
 
@@ -335,7 +350,7 @@ public class DrawerActivity extends AppCompatActivity
 
     public static void loadColor(){
         int totalCourseNum = TimetableFragment.courseList.length;
-        int[] color = loadIntArray("color", c);
+        int[] color = loadIntArray("color", activity);
         for(int i=0; i<totalCourseNum; i++) {
             try{
                 TimetableFragment.courseList[i].color = color[i];
@@ -352,7 +367,7 @@ public class DrawerActivity extends AppCompatActivity
         for(int i=0; i<totalCourseNum; i++) {
             color[i] = TimetableFragment.courseList[i].color;
         }
-        saveIntArray(color, "color", c);
+        saveIntArray(color, "color", activity);
     }
 
 
