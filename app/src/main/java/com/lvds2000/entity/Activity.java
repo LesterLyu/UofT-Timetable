@@ -6,7 +6,6 @@ import com.google.gson.annotations.SerializedName;
 import com.lvds2000.entity.enrol.Meeting;
 import com.lvds2000.entity.enrol.Time;
 import com.lvds2000.entity.plan.Day;
-import com.lvds2000.utsccsuntility.IntentOpener;
 
 import java.util.ArrayList;
 import java.util.List;

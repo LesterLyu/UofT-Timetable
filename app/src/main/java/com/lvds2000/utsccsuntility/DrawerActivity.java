@@ -21,15 +21,12 @@ import android.view.SubMenu;
 import android.view.View;
 import android.widget.TextView;
 
-import com.google.gson.Gson;
 import com.lvds2000.utsccsuntility.A08.DisplayCSCA08;
 import com.lvds2000.utsccsuntility.A20.DisplayCSCA20;
 import com.lvds2000.utsccsuntility.A48.InfoActivity;
 import com.lvds2000.utsccsuntility.A67.DisplayCSCA67;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 
 public class DrawerActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {

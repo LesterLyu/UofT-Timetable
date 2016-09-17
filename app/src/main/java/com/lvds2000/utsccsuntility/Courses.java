@@ -8,7 +8,7 @@ public class Courses {
     static Course course[];
 
     Courses(int totalCourseNum){
-        this.totalCourseNum = totalCourseNum;
+        Courses.totalCourseNum = totalCourseNum;
         course = new Course[totalCourseNum];
         for(int i=0; i<totalCourseNum; i++){
             course[i] = new Course();

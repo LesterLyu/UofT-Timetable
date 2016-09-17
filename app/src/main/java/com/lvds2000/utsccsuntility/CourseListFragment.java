@@ -185,7 +185,8 @@ class CustomListAdapter1 extends ArrayAdapter<String> {
             courseContentTV3.setVisibility(View.GONE);
         }
         return rowView;
-    };
+    }
+
     public int pickColor(int position){
         Random rnd = new Random();
         int color;

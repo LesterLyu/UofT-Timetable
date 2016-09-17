@@ -80,7 +80,7 @@ public class Setting extends AppCompatPreferenceActivity {
             passwordPref = (EditTextPreference) findPreference("password");
             auto_login_switch = (SwitchPreference) findPreference("auto_login");
             debug_switch = (SwitchPreference) findPreference("debug_switch");
-            versionField = (Preference) findPreference("about");
+            versionField = findPreference("about");
             versionField.setSummary(DrawerActivity.versionName + " | "+ DrawerActivity.currentVersionCode);
             defaultTimetable.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
                 @Override

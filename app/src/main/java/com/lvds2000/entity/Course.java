@@ -2,7 +2,6 @@ package com.lvds2000.entity;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
-import com.lvds2000.entity.Activity;
 import com.lvds2000.entity.enrol.EnrolledCourse;
 import com.lvds2000.entity.enrol.Meeting;
 import com.lvds2000.entity.plan.PlannedCourse;
