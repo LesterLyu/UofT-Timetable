@@ -7,6 +7,7 @@ import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.os.SystemClock;
+import android.support.annotation.ArrayRes;
 import android.support.v4.app.Fragment;
 import android.util.DisplayMetrics;
 import android.view.Gravity;
@@ -24,6 +25,7 @@ import com.lvds2000.entity.plan.Day;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -390,15 +392,15 @@ public class TimetableFragment extends Fragment {
 
 
     public void refreshCeil(){
-        String[] contentCourse = new String[20], enrollment = new String[20];
-        float[]  startTime = new float[20], endTime = new float[20], weekNum = new float[20];
-        // new
         int courseNum = 0;
         for(com.lvds2000.entity.Course course : courseList){
+            // select the corresponding courses to display
             if(course.getSectionCode().equalsIgnoreCase("F") && mode.equals("fall") ||
                     course.getSectionCode().equalsIgnoreCase("S") && mode.equals("winter") ||
                     course.getSectionCode().equalsIgnoreCase("Y")) {
                 List<com.lvds2000.entity.Activity> activities = course.getActivities();
+                String contentCourse, enrollment;
+                int startTime = -1, endTime = -1, weekNum = -1;
                 for(com.lvds2000.entity.Activity activity: activities) {
                     if (activity != null)
                         for (Day day : activity.getDays()) {
@@ -412,25 +414,23 @@ public class TimetableFragment extends Fragment {
                             enrollmentMap.put(true, "");
                             enrollmentMap.put(false, "*not enrolled");
                             //System.out.println(day.getDayOfWeek());
-                            weekNum[courseNum] = dayToNum.get(day.getDayOfWeek());
-                            enrollment[courseNum] = enrollmentMap.get(activity.getEnroled());
+                            weekNum = dayToNum.get(day.getDayOfWeek());
+                            enrollment = enrollmentMap.get(activity.getEnroled());
                             //System.out.println( weekNum[courseNum]);
                             SimpleDateFormat format = new SimpleDateFormat("hh:mma", Locale.CANADA);
                             try {
-                                startTime[courseNum] = format.parse(day.getStartTime()).getHours();
-                                endTime[courseNum] = format.parse(day.getEndTime()).getHours();
+                                startTime = format.parse(day.getStartTime()).getHours();
+                                endTime = format.parse(day.getEndTime()).getHours();
                             } catch (ParseException e) {
                                 e.printStackTrace();
                             }
 
-                            contentCourse[courseNum] = " " + course.getCourseCode() + "\n "
+                            contentCourse = ( " " + course.getCourseCode() + "\n "
                                     + activity.getActivityId() + "\n "
                                     + day.getRoomLocation() + "\n "
-                                    + enrollment[courseNum];
-                            addContent(startTime[courseNum], weekNum[courseNum],
-                                    endTime[courseNum] - startTime[courseNum],
-                                    contentCourse[courseNum], courseList[courseNum],
-                                    courseNum);
+                                    + enrollment);
+                            addContent(startTime, weekNum, endTime - startTime,
+                                    contentCourse, courseList[courseNum], courseNum);
                         }
                 }
             }

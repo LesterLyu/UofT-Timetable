@@ -1,0 +1,184 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="#FFFFFF">
+
+
+    <LinearLayout
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="25dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:background="@color/toolbar"
+        android:id="@+id/linearLayout">
+
+
+        <TextView
+            android:textSize="12sp"
+            android:layout_width="0dp"
+            android:layout_height="fill_parent"
+            android:layout_weight="1"
+            android:text=""
+            android:id="@+id/textView1" />
+
+        <TextView
+            android:textSize="12sp"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            android:gravity="center"
+            android:textColor="#FF737373"
+            android:text="Mon"
+            android:id="@+id/textView2" />
+
+        <TextView
+            android:textSize="12sp"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            android:gravity="center"
+            android:textColor="#FF737373"
+            android:text="Tue"
+            android:id="@+id/textView3" />
+
+        <TextView
+            android:textSize="12sp"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            android:gravity="center"
+            android:textColor="#FF737373"
+            android:text="Wed"
+            android:id="@+id/textView4" />
+
+        <TextView
+            android:textSize="12sp"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            android:gravity="center"
+            android:textColor="#FF737373"
+            android:text="Thu"
+            android:id="@+id/textView5" />
+
+        <TextView
+            android:textSize="12sp"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            android:gravity="center"
+            android:textColor="#FF737373"
+            android:text="Fri"
+            android:id="@+id/textView6" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/horizontalView"
+        android:layout_height="wrap_content"
+        android:scrollbars="horizontal|vertical"
+        android:scrollbarStyle="insideOverlay"
+        android:layout_width="fill_parent"
+        android:layout_below="@+id/linearLayout"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentBottom="true">
+
+        <GridLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:columnOrderPreserved="true"
+            android:alignmentMode="alignBounds"
+            android:columnCount="6"
+            android:useDefaultMargins="false"
+            android:padding="2dp"
+            android:orientation="horizontal"
+            android:id="@+id/gridLayout">
+
+            <TextView
+                android:layout_column="0"
+                android:layout_row="0"
+                android:layout_height="match_parent"
+                android:layout_width="23dp"
+                android:layout_marginRight="5px"
+                android:layout_marginTop="1px"
+                android:minHeight="60dp"
+                android:textSize="10sp"
+                android:text="7:00"
+                android:background="@drawable/cell_shape_time"/>
+
+            <TextView
+                android:layout_column="1"
+                android:layout_row="0"
+                android:layout_height="match_parent"
+                android:layout_width="45.4dp"
+                android:layout_marginRight="5px"
+                android:layout_marginTop="1px"
+                android:minHeight="60dp"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:text=" CSC207H1\n LEC 0101\n RW000"
+                android:textColor="@color/white"
+                android:background="@drawable/cell_shape_bot"/>
+
+
+            <TextView
+                android:layout_width="45.4dp"
+                android:layout_column="2"
+                android:layout_row="0"
+                android:layout_marginRight="5px"
+                android:layout_marginTop="1px"
+                android:minHeight="60dp"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:text=" CSC207H1\n LEC 0101\n RW000"
+                android:textColor="@color/white"
+                android:background="@color/md_blue_200"/>
+            <TextView
+                android:layout_width="45.4dp"
+                android:layout_column="3"
+                android:layout_row="0"
+                android:layout_marginRight="5px"
+                android:layout_marginTop="1px"
+                android:minHeight="60dp"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:text=" CSC207H1\n LEC 0101\n RW000"
+                android:textColor="@color/white"
+                android:background="@color/md_blue_200"/>
+            <TextView
+                android:layout_width="45.4dp"
+                android:layout_column="4"
+                android:layout_row="0"
+                android:layout_marginRight="5px"
+                android:layout_marginTop="1px"
+                android:minHeight="60dp"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:text=" CSC207H1\n LEC 0101\n RW000"
+                android:textColor="@color/white"
+                android:background="@color/md_blue_200"/>
+
+            <TextView
+                android:layout_width="45.4dp"
+                android:layout_column="5"
+                android:layout_row="0"
+                android:layout_marginRight="5px"
+                android:layout_marginTop="1px"
+                android:minHeight="60dp"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:text=" CSC207H1\n LEC 0101\n RW000"
+                android:textColor="@color/white"
+                android:background="@color/md_blue_200"/>
+
+
+
+
+
+        </GridLayout>
+    </LinearLayout>
+</RelativeLayout>
