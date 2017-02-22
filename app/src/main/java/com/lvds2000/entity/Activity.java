@@ -3,9 +3,9 @@ package com.lvds2000.entity;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
-import com.lvds2000.entity.enrol.Meeting;
-import com.lvds2000.entity.enrol.Time;
-import com.lvds2000.entity.plan.Day;
+import com.lvds2000.AcornAPI.enrol.Meeting;
+import com.lvds2000.AcornAPI.enrol.Time;
+import com.lvds2000.AcornAPI.plan.Day;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +28,7 @@ public class Activity {
     @Expose
     private int waitlistRank;
 
-    Activity(com.lvds2000.entity.plan.Activity activity){
+    Activity(com.lvds2000.AcornAPI.plan.Activity activity){
         activityId = activity.getActivityId();
         enroled = Boolean.parseBoolean(activity.getEnroled());
         commaSeparatedInstructorNames = activity.getCommaSeparatedInstructorNames();

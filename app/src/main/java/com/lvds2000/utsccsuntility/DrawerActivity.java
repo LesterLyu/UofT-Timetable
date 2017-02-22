@@ -1,7 +1,9 @@
 package com.lvds2000.utsccsuntility;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -12,21 +14,33 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.SubMenu;
 import android.view.View;
 import android.widget.TextView;
 
+import com.google.gson.Gson;
+import com.lvds2000.AcornAPI.auth.Acorn;
+import com.lvds2000.AcornAPI.enrol.EnrolledCourse;
+import com.lvds2000.AcornAPI.exception.LoginFailedException;
+import com.lvds2000.AcornAPI.plan.PlannedCourse;
 import com.lvds2000.utsccsuntility.A08.DisplayCSCA08;
 import com.lvds2000.utsccsuntility.A20.DisplayCSCA20;
 import com.lvds2000.utsccsuntility.A48.InfoActivity;
 import com.lvds2000.utsccsuntility.A67.DisplayCSCA67;
+import com.lvds2000.utsccsuntility.utils.UserInfo;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
 
 public class DrawerActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -34,6 +48,7 @@ public class DrawerActivity extends AppCompatActivity
     private static Fragment fragment1;
     private static Fragment timetable_fall_fragment;
     private static Fragment timetable_winter_fragment;
+    private static Fragment gradeFragment;
     private static FragmentManager fragmentManager;
     public static float scale;
     public static DisplayMetrics displaymetrics;
@@ -47,22 +62,25 @@ public class DrawerActivity extends AppCompatActivity
     private static Menu navi_menu;
     private static SubMenu menu_extra_info;
     public static String versionName, currentVersionCode;
-
+    private static ProgressDialog progress;
+    public static Acorn acorn;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        activity = this;
+
         // check version and do some task if the version is...
         versionName = BuildConfig.VERSION_NAME;
         currentVersionCode = "" + BuildConfig.VERSION_CODE;
 
-        String lastVersionCode = loadString("versionCode", this);
+        String lastVersionCode = loadString("versionCode");
 
         // first time launch or from update
         if(lastVersionCode.equals("") || lastVersionCode.equals("22") ){
-            downloadCourses();
+            downloadCoursesPrompt();
         }
-        DEBUG = loadBoolean("debug_switch", this);
+        DEBUG = loadBoolean("debug_switch");
 
 
         displaymetrics = new DisplayMetrics();
@@ -70,11 +88,12 @@ public class DrawerActivity extends AppCompatActivity
         dis_height = displaymetrics.heightPixels;
         dis_width = displaymetrics.widthPixels;
         scale = displaymetrics.density;
-        activity = this;
+
 
         fragment1 = new CourseListFragment();
         timetable_fall_fragment = TimetableFragment.newInstance("fall");
         timetable_winter_fragment = TimetableFragment.newInstance("winter");
+        gradeFragment = GradeFragment.newInstance();
 
         setContentView(R.layout.activity_drawer);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -102,7 +121,7 @@ public class DrawerActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         if(savedInstanceState == null) {
             // default timetable
-            String defaultTimetable = loadString("defaultTimetable", activity);
+            String defaultTimetable = loadString("defaultTimetable");
 
             if (defaultTimetable.equals("0")) {
                 fragmentManager.beginTransaction().replace(R.id.flContent, timetable_fall_fragment).commit();
@@ -128,15 +147,21 @@ public class DrawerActivity extends AppCompatActivity
             }
         }
         // optional course info
-        menu_extra_info = navi_menu.getItem(4).getSubMenu();
+        menu_extra_info = navi_menu.getItem(5).getSubMenu();
 
         debugCourse();
+        // initialize acorn if has username
+        if(!UserInfo.getUsername().isEmpty())
+            acorn = new Acorn(UserInfo.getUsername(), UserInfo.getPassword());
 
         //google analytics
         if(!initialized)
             AnalyticsTrackers.initialize(this);
         initialized = true;
         AnalyticsTrackers.getInstance().get(AnalyticsTrackers.Target.APP);
+
+        saveString("versionCode", "" + currentVersionCode);
+        saveString("versionName", "" + versionName);
 
     }
 
@@ -214,11 +239,15 @@ public class DrawerActivity extends AppCompatActivity
             mTitle = "Winter timetable";
             fragmentManager.beginTransaction().replace(R.id.flContent, timetable_winter_fragment).commit();
         }
+        else if(id == R.id.grade_menu){
+            mTitle = "Academic history";
+            fragmentManager.beginTransaction().replace(R.id.flContent, gradeFragment).commit();
+        }
         getSupportActionBar().setTitle(mTitle);
 
         if (id == R.id.nav_manage) {
             //closeDrawer();
-            downloadCourses();
+            downloadCoursesPrompt();
             //item.setCheckable(false);
 
         }
@@ -277,16 +306,108 @@ public class DrawerActivity extends AppCompatActivity
         return true;
     }
 
-    // return from downloading course
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        System.out.println("Back to DrawerActivity");
-        if (requestCode == 1) {
-            if(resultCode == Activity.RESULT_OK){
-                String result=data.getStringExtra("result");
 
+    /**
+     * update course info
+     */
+    public void downloadCoursesPrompt(){
+        progress = new ProgressDialog(this);
+        progress.setTitle("Loading");
+        progress.setMessage("Retrieving data...");
+        progress.setCancelable(false);
+
+        final String username = UserInfo.getUsername();
+        if(!username.isEmpty()){
+            if(acorn == null || UserInfo.isUserPassChanged()){
+                acorn = new Acorn(username, UserInfo.getPassword());
             }
-            if (resultCode == Activity.RESULT_CANCELED) {
+            progress.show();
+            new Thread() {
+                @Override
+                public void run() {
+                    downloadCourseData(acorn);
+                }
+            }.start();
+        }
+        // prompt user to input username and password
+        else {
+            UserInfo.promptInputUserPassAndUpdateCourseData(this, progress);
+
+        }
+    }
+
+    public void downloadCourseData(Acorn acorn){
+        try {
+            acorn.doLogin();
+        } catch (LoginFailedException e) {
+            e.printStackTrace();
+            final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setMessage(e.getMessage())
+                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        public void onClick(final DialogInterface dialog, int id) {
+                            activity.runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    dialog.cancel();
+                                    // this method may be called by another class
+                                    if(progress != null)
+                                        progress.cancel();
+                                }
+                            });
+                        }
+                    });
+            UserInfo.clearPassword(this);
+            activity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    builder.create().show();
+                }
+            });
+            return;
+        }
+        acorn.getCourseManager().loadCourses();
+        acorn.getCourseManager().getAppliedCourses();
+        List<com.lvds2000.entity.Course> courseList = new ArrayList<>();
+
+        List<EnrolledCourse> enrolledCourseList =  acorn.getCourseManager().getAppliedCourses();
+        for(EnrolledCourse enrolledCourse: enrolledCourseList){
+            Log.i("downloadCourseData", enrolledCourse.toString());
+            courseList.add(new com.lvds2000.entity.Course(enrolledCourse));
+        }
+        List<PlannedCourse> plannedCourseList =  acorn.getCourseManager().getPlannedCourses();
+        for(PlannedCourse plannedCourse: plannedCourseList){
+            Log.i("downloadCourseData", plannedCourse.toString());
+            courseList.add(new com.lvds2000.entity.Course(plannedCourse));
+        }
+
+        Collections.sort(courseList, new Comparator<com.lvds2000.entity.Course>() {
+            @Override
+            public int compare(com.lvds2000.entity.Course o1, com.lvds2000.entity.Course o2) {
+                if(o1.getSectionCode().equalsIgnoreCase("S") && (o2.getSectionCode().equalsIgnoreCase("Y") || o2.getSectionCode().equalsIgnoreCase("F")))
+                    return 1;
+                else if(o1.getSectionCode().equalsIgnoreCase("Y") && o2.getSectionCode().equalsIgnoreCase("F"))
+                    return 1;
+                else if(!o1.getSectionCode().equalsIgnoreCase(o2.getSectionCode()))
+                    return -1;
+                else{
+                    return o1.getCourseCode().compareToIgnoreCase(o2.getCourseCode());
+                }
+            }
+        });
+
+        Gson gson = new Gson();
+
+        String json =  gson.toJson(courseList);
+        TimetableFragment.setCourseJson(json);
+        DrawerActivity.saveString("courseJson", json);
+        // this method may be called by another class
+        if(progress != null)
+            progress.cancel();
+
+        // finish up
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
                 System.out.println("Returned");
                 try {
                     timetable_fall_fragment = TimetableFragment.newInstance("fall");
@@ -296,28 +417,32 @@ public class DrawerActivity extends AppCompatActivity
                     NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
                     navi_menu = navigationView.getMenu();
                     MenuItem menuTimetable = navi_menu.getItem(1);
-                    menuTimetable.setChecked(true);
-                    getSupportActionBar().setTitle("Fall timetable");
-                    fragmentManager.beginTransaction().replace(R.id.flContent, timetable_fall_fragment).commitAllowingStateLoss();
 
-                    System.out.println("debugCourse()");
-                    saveString("versionCode", "" + currentVersionCode, this);
-                    saveString("versionName", "" + versionName, this);
+                    if(navi_menu.getItem(1).isChecked()){
+                        getSupportActionBar().setTitle("Fall timetable");
+                        fragmentManager.beginTransaction().replace(R.id.flContent, timetable_fall_fragment).commitAllowingStateLoss();
+                    }
+                    else if(navi_menu.getItem(2).isChecked()){
+                        getSupportActionBar().setTitle("Winter timetable");
+                        fragmentManager.beginTransaction().replace(R.id.flContent, timetable_winter_fragment).commitAllowingStateLoss();
+                    }
+                    else if(navi_menu.getItem(0).isChecked()){
+                        getSupportActionBar().setTitle("Course list");
+                        fragmentManager.beginTransaction().replace(R.id.flContent, fragment1).commitAllowingStateLoss();
+                    }
+                    else if(navi_menu.getItem(3).isChecked()){
+                        getSupportActionBar().setTitle("Academic history");
+                    }
+
+
 
                 }catch(Exception e){
                     System.out.println("Failed to import course info from acorn");
                 }
                 debugCourse();
             }
-        }
-        else{
-            super.onActivityResult(requestCode, resultCode, data);
-        }
-    }//onActivityResult
+        });
 
-    public void downloadCourses(){
-        Intent intent = new Intent(this, DownloadCourses.class);
-        startActivityForResult(intent, 1);
     }
 
     public void csca08(){
@@ -347,7 +472,7 @@ public class DrawerActivity extends AppCompatActivity
 
     public static void loadColor(){
         int totalCourseNum = TimetableFragment.courseList.length;
-        int[] color = loadIntArray("color", activity);
+        int[] color = loadIntArray("color");
         for(int i=0; i<totalCourseNum; i++) {
             try{
                 TimetableFragment.courseList[i].color = color[i];
@@ -364,7 +489,7 @@ public class DrawerActivity extends AppCompatActivity
         for(int i=0; i<totalCourseNum; i++) {
             color[i] = TimetableFragment.courseList[i].color;
         }
-        saveIntArray(color, "color", activity);
+        saveIntArray(color, "color");
     }
 
 
@@ -400,38 +525,38 @@ public class DrawerActivity extends AppCompatActivity
             array[i] = prefs.getBoolean(booleanName + "_" + i, false);
         return array;
     }
-    public static boolean saveIntArray(int[] myInt, String intName, Context mContext) {
-        SharedPreferences prefs = mContext.getSharedPreferences("preferenceInt", 0);
+    public static boolean saveIntArray(int[] myInt, String intName) {
+        SharedPreferences prefs = activity.getSharedPreferences("preferenceInt", 0);
         SharedPreferences.Editor editor = prefs.edit();
         editor.putInt(intName + "_size", myInt.length);
         for(int i=0;i<myInt.length;i++)
             editor.putInt(intName + "_" + i, myInt[i]);
         return editor.commit();
     }
-    public static int[] loadIntArray(String intName, Context mContext) {
-        SharedPreferences prefs = mContext.getSharedPreferences("preferenceInt", 0);
+    public static int[] loadIntArray(String intName) {
+        SharedPreferences prefs = activity.getSharedPreferences("preferenceInt", 0);
         int size = prefs.getInt(intName + "_size", 0);
         int array[] = new int[size];
         for(int i=0;i<size;i++)
             array[i] = prefs.getInt(intName + "_" + i, 0);
         return array;
     }
-    public static boolean saveString(String name, String s, Context mContext) {
-        SharedPreferences prefs = mContext.getSharedPreferences("com.lvds2000.utsccsuntility_preferences", 0);
+    public static boolean saveString(String name, String s) {
+        SharedPreferences prefs = activity.getSharedPreferences("com.lvds2000.utsccsuntility_preferences", 0);
         SharedPreferences.Editor editor = prefs.edit();
         editor.putString(name, s);
         return editor.commit();
     }
-    public static String loadString(String name, Context mContext) {
-        SharedPreferences prefs = mContext.getSharedPreferences("com.lvds2000.utsccsuntility_preferences", 0);
+    public static String loadString(String name) {
+        SharedPreferences prefs = activity.getSharedPreferences("com.lvds2000.utsccsuntility_preferences", 0);
         return prefs.getString(name, "");
     }
-    public static boolean loadBoolean(String name, Context mContext) {
-        SharedPreferences prefs = mContext.getSharedPreferences("com.lvds2000.utsccsuntility_preferences", 0);
+    public static boolean loadBoolean(String name) {
+        SharedPreferences prefs = activity.getSharedPreferences("com.lvds2000.utsccsuntility_preferences", 0);
         return prefs.getBoolean(name, false);
     }
-    public static int loadInt(String name, Context mContext) {
-        SharedPreferences prefs = mContext.getSharedPreferences("com.lvds2000.utsccsuntility_preferences", 0);
+    public static int loadInt(String name) {
+        SharedPreferences prefs = activity.getSharedPreferences("com.lvds2000.utsccsuntility_preferences", 0);
         return prefs.getInt(name, 0);
     }
 }

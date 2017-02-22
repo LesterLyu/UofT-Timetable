@@ -23,6 +23,9 @@ import java.util.Random;
 
 import javax.crypto.NoSuchPaddingException;
 
+/**
+ * @author Lester Lyu
+ */
 public class Setting extends AppCompatPreferenceActivity {
     public static Context context;
     @Override

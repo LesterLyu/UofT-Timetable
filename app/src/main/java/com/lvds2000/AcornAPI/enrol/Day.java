@@ -1,5 +1,5 @@
 
-package com.lvds2000.entity.enrol;
+package com.lvds2000.AcornAPI.enrol;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;

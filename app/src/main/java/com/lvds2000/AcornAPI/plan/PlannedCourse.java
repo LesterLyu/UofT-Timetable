@@ -1,7 +1,7 @@
 /**
  * Planned courses are the courses in the enrollment cart
  */
-package com.lvds2000.entity.plan;
+package com.lvds2000.AcornAPI.plan;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
@@ -52,6 +52,12 @@ public class PlannedCourse {
     private Info info;
 
     public int color;
+    
+    
+    @Override
+	public String toString() {
+		return  "[PlannedCourse" + courseCode + sectionCode + ", " + regSessionCode1 + " to " + regSessionCode2 + "]";
+	}
 
     /**
      * 

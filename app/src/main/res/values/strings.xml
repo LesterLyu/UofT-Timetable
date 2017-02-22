@@ -45,17 +45,14 @@
     <string name="title_activity_drawer">UofT Timetable</string>
 
 
-
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
-<!-- TODO: Remove or change this placeholder text -->
+    <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="send_to">z</string>
     <string name="title_activity_setting">Setting</string>
     <string name="title_activity_settings">Settings</string>
-
-
 
 
 </resources>

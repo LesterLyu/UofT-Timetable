@@ -2,9 +2,9 @@ package com.lvds2000.entity;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
-import com.lvds2000.entity.enrol.EnrolledCourse;
-import com.lvds2000.entity.enrol.Meeting;
-import com.lvds2000.entity.plan.PlannedCourse;
+import com.lvds2000.AcornAPI.enrol.EnrolledCourse;
+import com.lvds2000.AcornAPI.enrol.Meeting;
+import com.lvds2000.AcornAPI.plan.PlannedCourse;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -78,10 +78,10 @@ public class Course {
         sectionCode = enrolledCourse.getSectionCode();
         courseTitle = enrolledCourse.getTitle();
 
-        if(enrolledCourse.getStatus().equals("APP"))
+        if(enrolledCourse.getStatus().equalsIgnoreCase("APP"))
             // Enrolled
             primaryActivityId = enrolledCourse.getPrimaryTeachMethod() + " " + enrolledCourse.getPrimarySectionNo();
-        else
+        else if(enrolledCourse.getStatus().equalsIgnoreCase("WAIT"))
             // Waitlisted
             primaryActivityId = enrolledCourse.getWaitlistTeachMethod() + " " + enrolledCourse.getWaitlistSectionNo().trim();
         secondaryActivityId = enrolledCourse.getSecondaryTeachMethod1() + " " + enrolledCourse.getSecondaryTeachMethod1();
@@ -90,10 +90,11 @@ public class Course {
         regSessionCode2 = enrolledCourse.getRegSessionCode2();
         regSessionCode3 = enrolledCourse.getRegSessionCode3();
 
+        if(!enrolledCourse.getStatus().equalsIgnoreCase("DROP"))
             for(Meeting meeting: enrolledCourse.getMeetings()) {
-                if(enrolledCourse.getStatus().equals("APP"))
+                if(enrolledCourse.getStatus().equalsIgnoreCase("APP"))
                     activities.add(new Activity(meeting, false));
-                else if(meeting.getSectionNo().trim().equals(enrolledCourse.getWaitlistSectionNo().trim()))
+                else if(enrolledCourse.getStatus().equalsIgnoreCase("WAIT"))
                     activities.add(new Activity(meeting, true));
             }
     }

@@ -23,7 +23,7 @@ import android.widget.TextView;
 
 import com.google.gson.Gson;
 import com.lvds2000.entity.Course;
-import com.lvds2000.entity.plan.Day;
+import com.lvds2000.AcornAPI.plan.Day;
 import com.lvds2000.utsccsuntility.DrawerActivity;
 import com.lvds2000.utsccsuntility.R;
 import com.lvds2000.utsccsuntility.Timetable_SubMenu;
@@ -86,7 +86,7 @@ public class TimtableWidgetProvider extends AppWidgetProvider {
 
             // copy patste here
             if(courseJson == null || courseJson.equals(""))
-                courseJson = DrawerActivity.loadString("courseJson", activity);
+                courseJson = DrawerActivity.loadString("courseJson");
             System.out.println(courseJson);
             Gson gson = new Gson();
             courseList = gson.fromJson(courseJson, com.lvds2000.entity.Course[].class);

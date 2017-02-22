@@ -1,5 +1,5 @@
 
-package com.lvds2000.entity.enrol;
+package com.lvds2000.AcornAPI.enrol;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
@@ -9,7 +9,12 @@ import java.util.List;
 
 public class Meeting {
 
-    @SerializedName("sectionNo")
+	@Override
+	public String toString() {
+		return "Meeting [waitlistRank=" + waitlistRank + ", displayName=" + displayName + "]";
+	}
+
+	@SerializedName("sectionNo")
     @Expose
     private String sectionNo;
     @SerializedName("sessionCode")
@@ -96,6 +101,8 @@ public class Meeting {
     @SerializedName("commaSeparatedInstructorNames")
     @Expose
     private String commaSeparatedInstructorNames;
+    
+    
 
     /**
      * 

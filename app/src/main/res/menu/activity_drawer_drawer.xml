@@ -10,9 +10,12 @@
             android:checked="true"/>
         <item android:id="@+id/winter_timetable" android:icon="@drawable/ic_view_module_black_24dp"
             android:title="Winter timetable" />
+        <item android:id="@+id/grade_menu" android:icon="@drawable/ic_info_black_24dp"
+            android:title="Academic History" />
         <item android:id="@+id/nav_manage" android:icon="@drawable/ic_import_export_black_24dp"
             android:title="Import timetable"
             android:checkable="false"/>
+
     </group>
 
     <item android:id="@+id/item_extra_info" android:title="Course info">

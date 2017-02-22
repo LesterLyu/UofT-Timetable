@@ -1,15 +1,17 @@
 package com.lvds2000.utsccsuntility;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.os.SystemClock;
-import android.support.annotation.ArrayRes;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,13 +21,15 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.google.gson.Gson;
+import com.lvds2000.AcornAPI.auth.Acorn;
+import com.lvds2000.AcornAPI.exception.LoginFailedException;
 import com.lvds2000.entity.Course;
-import com.lvds2000.entity.plan.Day;
+import com.lvds2000.AcornAPI.plan.Day;
+import com.lvds2000.utsccsuntility.utils.UserInfo;
 
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -44,21 +48,22 @@ public class TimetableFragment extends Fragment {
     static int displayWidth;
     int rowSize;
     float time1, time2;
-    final boolean SHOWALLROWS = false;
-    private static Activity activity;
+    final boolean SHOW_ALL_ROWS = false;
+    //private Context context;
     View view;
     public static com.lvds2000.entity.Course[] courseList;
     //public static EnrolledCourse[] enrolledCourseList;
     private static String courseJson;
     private String mode;
     private static final String ARG_PARAM1 = "mode";
+    private Activity activity;
+
 
     public static TimetableFragment newInstance(String mode) {
-        activity = DrawerActivity.activity;
         // load courseJson from storage
         System.out.println("courseJson=" + courseJson);
         if(courseJson == null || courseJson.equals(""))
-            courseJson = DrawerActivity.loadString("courseJson", activity);
+            courseJson = DrawerActivity.loadString("courseJson");
 //        if(enrolledCourseJson == null || enrolledCourseJson.equals(""))
 //            enrolledCourseJson = DrawerActivity.loadString("enrolledCourseJson", activity);
 //        System.out.println("enrolledCourseJson=" + enrolledCourseJson);
@@ -74,8 +79,16 @@ public class TimetableFragment extends Fragment {
         System.out.println("mode:" + mode);
         return fragment;
     }
-
     public TimetableFragment() {
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+
+        activity = getActivity();
+
+        Log.i("onAttach", mode + "Timetable Fragment attached");
         // get current device screen pixels
         displayMetrics = DrawerActivity.displaymetrics;
         displayHeight = displayMetrics.heightPixels;
@@ -83,8 +96,51 @@ public class TimetableFragment extends Fragment {
         scale = displayMetrics.density;
         rowSize = getPx(60);
 
-        LayoutInflater li = LayoutInflater.from(activity);
+        LayoutInflater li = LayoutInflater.from(context);
         view = li.inflate(R.layout.activity_time_table2, null, false);
+
+        final SwipeRefreshLayout swipeContainer = (SwipeRefreshLayout) view.findViewById(R.id.swipeContainer);
+        //swipeContainer.setDistanceToTriggerSync(30);
+
+        swipeContainer.setColorSchemeResources(android.R.color.holo_blue_bright,
+                android.R.color.holo_green_light,
+                android.R.color.holo_orange_light,
+                android.R.color.holo_red_light);
+
+//        swipeContainer.post(new Runnable() {
+//            @Override
+//            public void run() {
+//                swipeContainer.setRefreshing(true);
+//            }
+//        });
+
+        swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                new Thread() {
+                    @Override
+                    public void run() {
+                        if(DrawerActivity.acorn == null || UserInfo.isUserPassChanged()){
+                            DrawerActivity.acorn = new Acorn(UserInfo.getUsername(), UserInfo.getPassword());
+                        }
+                        try {
+                            DrawerActivity.acorn.doLogin();
+                        } catch (LoginFailedException e) {
+                            e.printStackTrace();
+                        }
+                        ((DrawerActivity)activity).downloadCourseData(DrawerActivity.acorn);
+                        activity.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                swipeContainer.setRefreshing(false);
+                            }
+                        });
+                    }
+                }.start();
+            }
+        });
+
+
         // textViews tv --> LinearLayout ll--> GridLayout gl
         GridLayout gl = (GridLayout)view.findViewById(R.id.gridLayout);
 
@@ -94,7 +150,7 @@ public class TimetableFragment extends Fragment {
 
             // set the left side time
             for(int k=0; k<1; k++) {
-                tv[i][k] = new TextView(activity);
+                tv[i][k] = new TextView(context);
                 tv[i][k].setText(i + ":00");
                 tv[i][k].setBackgroundResource(R.drawable.cell_shape_time);
                 tv[i][k].setGravity(Gravity.RIGHT);
@@ -114,7 +170,7 @@ public class TimetableFragment extends Fragment {
                 tv[i][k].setLayoutParams(param_mid);
 
                 //LinearLayout
-                ll[i][k] = new LinearLayout(activity);
+                ll[i][k] = new LinearLayout(context);
                 ll[i][k].setOrientation(LinearLayout.VERTICAL);
                 ll[i][k].setLayoutParams(param);
                 ll[i][k].addView(tv[i][k], 0);
@@ -122,7 +178,7 @@ public class TimetableFragment extends Fragment {
                 gl.addView(ll[i][k]);
             }
             for(int k=1; k<numberOfColumns; k++) {
-                tv[i][k] = new TextView(activity);
+                tv[i][k] = new TextView(context);
                 tv[i][k].setTextSize(10);
                 tv[i][k].setBackgroundResource(R.drawable.cell_shape_bot);
                 tv[i][k].setTextColor(Color.WHITE);
@@ -143,7 +199,7 @@ public class TimetableFragment extends Fragment {
                 tv[i][k].setLayoutParams(param_mid);
 
                 //LinearLayout
-                ll[i][k] = new LinearLayout(activity);
+                ll[i][k] = new LinearLayout(context);
                 ll[i][k].setOrientation(LinearLayout.VERTICAL);
                 ll[i][k].setLayoutParams(param);
                 ll[i][k].addView(tv[i][k], 0);
@@ -201,12 +257,16 @@ public class TimetableFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         System.out.println("Called onCreate");
+
+
+
+
         if (getArguments() != null)
             mode = getArguments().getString(ARG_PARAM1);
 
         //delete rows
         try{
-            if(!SHOWALLROWS) {
+            if(!SHOW_ALL_ROWS) {
                 float earliest, latest;
                 Date time[] = null;
                 try {

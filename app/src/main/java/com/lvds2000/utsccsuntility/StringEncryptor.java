@@ -18,6 +18,7 @@ import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.DESKeySpec;
 /**
  * Created by LV on 2015-12-15.
+ * @author Lester Lyu
  */
 public class StringEncryptor {
     private  SecretKey key;

@@ -15,6 +15,7 @@ import java.net.URL;
 
 /**
  * Created by LV on 2015-10-31.
+ * @author Lester Lyu
  */
 public class WebViewActivity extends AppCompatActivity {
     public WebView webView;

@@ -10,11 +10,12 @@ import java.net.URL;
 
 /**
  * Created by LV on 2015-09-23.
+ * @author Lester Lyu
  */
 public class MAsyncTask extends AsyncTask<URL, Void, String> {
-    public String inputLine, web;
+    private String inputLine, web;
 
-    String saved="";
+    private String saved="";
     @Override
     protected String doInBackground(URL... url) {
 
@@ -27,8 +28,6 @@ public class MAsyncTask extends AsyncTask<URL, Void, String> {
                 web = web + "\n" + inputLine;
             }
             in.close();
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }

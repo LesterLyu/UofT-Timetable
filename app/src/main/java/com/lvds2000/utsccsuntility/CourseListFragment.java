@@ -12,7 +12,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.lvds2000.entity.plan.Day;
+import com.lvds2000.AcornAPI.plan.Day;
 
 import java.util.HashMap;
 import java.util.List;

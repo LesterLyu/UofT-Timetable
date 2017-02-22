@@ -154,7 +154,7 @@ public class Timetable_SubMenu extends AppCompatActivity {
     }
 
     private void getCourseDescription(final String code) {
-        String loadFromStorage = DrawerActivity.loadString(code + "Description", context);
+        String loadFromStorage = DrawerActivity.loadString(code + "Description");
         if(loadFromStorage.equals(""))
             new RetrieveTask().execute(code);
         else
@@ -280,7 +280,7 @@ public class Timetable_SubMenu extends AppCompatActivity {
                 out[0] = convertStreamToString(stream);
                 out[1] = out[0].substring(out[0].indexOf("<p>") + 3, out[0].indexOf("<\\/p>")) ;
                 System.out.println("description: " + out[1]);
-                DrawerActivity.saveString(codes[0] + "Description", out[1], context);
+                DrawerActivity.saveString(codes[0] + "Description", out[1]);
 
                 stream.close();
 
