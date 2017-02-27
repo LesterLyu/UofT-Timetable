@@ -18,22 +18,6 @@
 
     </group>
 
-    <item android:id="@+id/item_extra_info" android:title="Course info">
-        <menu>
-            <item android:id="@+id/nav_a08" android:icon="@drawable/ic_info_black_24dp"
-                android:title="CSCA08" />
-            <item android:id="@+id/nav_a20" android:icon="@drawable/ic_info_black_24dp"
-                android:title="CSCA20" />
-            <item android:id="@+id/nav_a67" android:icon="@drawable/ic_info_black_24dp"
-                android:title="CSCA67" />
-            <item android:id="@+id/nav_a48" android:icon="@drawable/ic_info_black_24dp"
-                  android:title="CSCA48" />
-            <item android:id="@+id/nav_cscx" android:icon="@drawable/ic_info_black_24dp"
-                android:title="CSCXXX" />
-            <!--<item android:id="@+id/nav_send" android:icon="@android:drawable/ic_menu_send"-->
-                <!--android:title="Send" />-->
-        </menu>
-    </item>
 
     <item android:title="Communicate">
         <menu>

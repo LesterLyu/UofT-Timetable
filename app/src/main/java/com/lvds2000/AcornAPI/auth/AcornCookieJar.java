@@ -14,7 +14,7 @@ import okhttp3.HttpUrl;
  */
 class AcornCookieJar implements CookieJar{
 
-	private final HashMap<String, List<Cookie>> cookieStore = new HashMap<>();
+	private final Map<String, List<Cookie>> cookieStore = new HashMap<>();
 
 	public void saveFromResponse(HttpUrl url, List<Cookie> cookies) {
 		//System.out.println("saveFromResponse:\n" + cookies);
@@ -35,9 +35,13 @@ class AcornCookieJar implements CookieJar{
 
 	/**
 	 * for self test
-	 * @return
+	 * @return cookies
 	 */
-	public Map<String, List<Cookie>> getAllCookie(){
+    Map<String, List<Cookie>> getAllCookie(){
 		return cookieStore;
 	}
+
+    void addAllCookies(Map<String, List<Cookie>> newCookies){
+        cookieStore.putAll(newCookies);
+    }
 }

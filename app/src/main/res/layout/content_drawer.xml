@@ -8,7 +8,7 @@
     android:paddingBottom="0dp"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:showIn="@layout/app_bar_drawer"
-    tools:context="com.lvds2000.utsccsuntility.DrawerActivity" >
+    tools:context="com.lvds2000.uoft_timetable.DrawerActivity" >
 
     <!-- The main content view where fragments are loaded -->
     <FrameLayout

@@ -2,20 +2,23 @@ package com.lvds2000.AcornAPI.auth;
 
 import android.util.Log;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import com.lvds2000.AcornAPI.course.CourseManager;
+import com.lvds2000.AcornAPI.exception.LoginFailedException;
+import com.lvds2000.AcornAPI.exception.NetworkFailedException;
+import com.lvds2000.AcornAPI.grade.GradeManager;
+import com.lvds2000.AcornAPI.plan.PlannedCourse;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
-import com.lvds2000.AcornAPI.course.CourseManager;
-import com.lvds2000.AcornAPI.plan.PlannedCourse;
-import com.lvds2000.AcornAPI.exception.LoginFailedException;
-import com.lvds2000.AcornAPI.grade.GradeManager;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import okhttp3.Call;
 import okhttp3.Callback;
+import okhttp3.Cookie;
 import okhttp3.FormBody;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
@@ -35,6 +38,8 @@ public class Acorn {
     private RegistrationManager registrationManager;
     private GradeManager gradeManager;
     private Boolean isLoggedIn = null;
+    private final int WAIT_TIME = 15000; // in ms
+
 
     public Acorn(String acornUsername, String acornPassword) {
         this.acornUsername = acornUsername;
@@ -47,6 +52,14 @@ public class Acorn {
         courseManager = new CourseManager(client, registrationManager);
         gradeManager = new GradeManager(client);
 
+    }
+
+    public Map<String, List<Cookie>> getCookies(){
+        return acoreCookieJar.getAllCookie();
+    }
+
+    public void setCookies(Map<String, List<Cookie>> newCookies){
+        acoreCookieJar.addAllCookies(newCookies);
     }
 
     public boolean isSameUserPass(String user, String pass){
@@ -81,8 +94,11 @@ public class Acorn {
     }
 
 
-
-    public boolean isLoggedIn(){
+    /**
+     * @throws NetworkFailedException iff the network is not connected
+     * @return true iff logged in, false iff not logged in.
+     */
+    public boolean isLoggedIn() throws NetworkFailedException{
         final Boolean isLoggedIn[] = new Boolean[1];
 
         final Request request = new Request.Builder()
@@ -92,7 +108,7 @@ public class Acorn {
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
-                isLoggedIn[0] = false;
+                isLoggedIn[0] = null;
             }
 
             @Override
@@ -103,12 +119,15 @@ public class Acorn {
                 }
                 else
                     isLoggedIn[0] = true;
-                System.out.println("usLoggedIn=" + isLoggedIn[0]);
+                System.out.println("isLoggedIn=" + isLoggedIn[0]);
             }
         });
         long prev = System.currentTimeMillis();
-        while (System.currentTimeMillis() - prev < 15000 && isLoggedIn[0] == null) {
+        while (System.currentTimeMillis() - prev < 3000 && isLoggedIn[0] == null) {
 
+        }
+        if(isLoggedIn[0] == null){
+            throw new NetworkFailedException();
         }
         return (isLoggedIn[0] == null) ? false : (isLoggedIn[0]);
     }
@@ -117,12 +136,15 @@ public class Acorn {
      * First step,
      * get pubcookie_g_req, post_stuff, relay_url from https://idp.utorauth.utoronto.ca/idp/Authn/RemoteUserForceAuth
      *
-     * @return the Map of them
      */
     public void doLogin() throws LoginFailedException {
-        if(isLoggedIn()){
-            Log.i("Acorn Login", "Already Logged in...");
-            return;
+        try {
+            if(isLoggedIn()){
+                Log.i("Acorn Login", "Already Logged in...");
+                return;
+            }
+        } catch (NetworkFailedException e) {
+            throw new LoginFailedException(e.getMessage());
         }
         Log.i("Acorn Login", "Loging in...");
         final Map<String, String> map = new HashMap<String, String>();
@@ -135,6 +157,7 @@ public class Acorn {
             client.newCall(request).enqueue(new Callback() {
                 @Override
                 public void onFailure(Call call, IOException e) {
+
                 }
 
                 @Override
@@ -152,7 +175,7 @@ public class Acorn {
             e.printStackTrace();
         }
         long prev = System.currentTimeMillis();
-        while (System.currentTimeMillis() - prev < 15000 && isLoggedIn == null) {
+        while (System.currentTimeMillis() - prev < WAIT_TIME && isLoggedIn == null) {
 
         }
         Log.i("Login", "consume " + (System.currentTimeMillis() - prev) + "ms");

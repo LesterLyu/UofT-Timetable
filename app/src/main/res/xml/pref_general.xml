@@ -10,13 +10,6 @@
         android:defaultValue="0"
         />
 
-    <SwitchPreference
-        android:key="auto_login"
-        android:title="Automatically login"
-        android:summaryOn="Automatically login when import timetable"
-        android:defaultValue="false"
-        android:summaryOff="Enter the username and password manually when import timetable"/>
-
     <EditTextPreference
         android:key = "username"
         android:title="UTORid / JOINid"

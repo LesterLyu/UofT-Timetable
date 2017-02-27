@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.lvds2000.utsccsuntility">
+    package="com.lvds2000.uoft_timetable">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <!-- <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/> -->
@@ -8,7 +8,7 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
-        android:name=".MyApplication"
+        android:name="com.lvds2000.uoft_timetable.MyApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -26,135 +26,11 @@
                 android:resource="@xml/widget_info" />
         </receiver>
 -->
-        <activity
-            android:name=".A08.DisplayCSCA08"
-            android:label="@string/title_activity_display_csca08" >
-        </activity>
-        <activity
-            android:name=".A08.A08_Exercise"
-            android:label="@string/title_activity_a08__exercise" >
-        </activity>
-        <activity
-            android:name=".A08.A08_Ann"
-            android:label="@string/title_activity_a08__ann" >
-        </activity>
-        <activity
-            android:name=".A08.A08_Test"
-            android:label="@string/title_activity_a08__test" >
-        </activity>
-        <activity
-            android:name=".A08.A08_Lec"
-            android:label="@string/title_activity_a08__lec" >
-        </activity>
-        <activity
-            android:name=".A08.A08_Tut"
-            android:label="@string/title_activity_a08__tut" >
-        </activity>
-        <activity
-            android:name=".A08.A08_Pra"
-            android:label="@string/title_activity_a08__pra" >
-        </activity>
-        <activity
-            android:name=".A20.DisplayCSCA20"
-            android:label="@string/title_activity_display_csca20" >
-        </activity>
-        <activity
-            android:name=".A20.A20_Ann"
-            android:label="@string/title_activity_a20__ann" >
-        </activity>
-        <activity
-            android:name=".A20.A20_Exe"
-            android:label="@string/title_activity_a20__exe" >
-        </activity>
-        <activity
-            android:name=".A20.A20_Calendar"
-            android:label="@string/title_activity_a20__calendar" >
-        </activity>
-        <activity
-            android:name=".A20.A20_Lec"
-            android:label="@string/title_activity_a20__lec" >
-        </activity>
-        <activity
-            android:name=".A67.DisplayCSCA67"
-            android:label="@string/title_activity_display_csca67" >
-        </activity>
-        <activity
-            android:name=".A67.A67_Ann"
-            android:label="@string/title_activity_a67__ann" >
-        </activity>
-        <activity
-            android:name=".A67.A67_Exe"
-            android:label="@string/title_activity_a67__exe" >
-        </activity>
-        <activity
-            android:name=".A67.A67_Calendar"
-            android:label="@string/title_activity_a67__calendar" >
-        </activity>
-        <activity
-            android:name=".A67.A67_Lec"
-            android:label="@string/title_activity_a67__lec" >
-        </activity>
-        <activity
-        android:name=".A48.InfoActivity"
-        android:label="@string/title_activity_display_csca48" >
-    </activity>
-        <activity
-            android:name=".A48.Exercise"
-            android:label="@string/title_activity_a08__exercise" >
-        </activity>
-        <activity
-            android:name=".A48.Ann"
-            android:label="@string/title_activity_a08__ann" >
-        </activity>
-        <activity
-            android:name=".A48.Test"
-            android:label="@string/title_activity_a08__test" >
-        </activity>
-        <activity
-            android:name=".A48.Lec"
-            android:label="@string/title_activity_a08__lec" >
-        </activity>
-        <activity
-            android:name=".A48.Tut"
-            android:label="@string/title_activity_a08__tut" >
-        </activity>
-        <activity
-            android:name=".A48.Pra"
-            android:label="@string/title_activity_a08__pra" >
-        </activity>
-        <activity
-            android:name=".Generic.InfoActivity"
-            android:label="@string/title_activity_display_csca48" >
-        </activity>
-        <activity
-            android:name=".Generic.Exercise"
-            android:label="@string/title_activity_a08__exercise" >
-        </activity>
-        <activity
-            android:name=".Generic.Ann"
-            android:label="@string/title_activity_a08__ann" >
-        </activity>
-        <activity
-            android:name=".Generic.Test"
-            android:label="@string/title_activity_a08__test" >
-        </activity>
-        <activity
-            android:name=".Generic.Lec"
-            android:label="@string/title_activity_a08__lec" >
-        </activity>
-        <activity
-            android:name=".Generic.Tut"
-            android:label="@string/title_activity_a08__tut" >
-        </activity>
-        <activity
-            android:name=".Generic.Pra"
-            android:label="@string/title_activity_a08__pra" >
-        </activity>
 
-        <activity android:name=".Timetable_SubMenu" >
+        <activity android:name="com.lvds2000.uoft_timetable.Timetable_SubMenu" >
         </activity>
         <activity
-            android:name=".DrawerActivity"
+            android:name="com.lvds2000.uoft_timetable.DrawerActivity"
             android:label="@string/title_activity_drawer"
             android:theme="@style/AppTheme.NoActionBar" >
             <intent-filter>
@@ -168,7 +44,7 @@
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
 
-        <activity android:name=".Setting" >
+        <activity android:name="com.lvds2000.uoft_timetable.Setting" >
         </activity>
 
         <uses-library

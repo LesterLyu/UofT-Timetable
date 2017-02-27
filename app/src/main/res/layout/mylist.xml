@@ -85,7 +85,7 @@
                     android:textSize="14sp"
                     android:layout_marginTop="0dp"
                     android:layout_marginLeft="8dp"
-                    android:textColor="#444444"/>
+                    android:textColor="#7b7b7b"/>
                 <TextView
                     android:id="@+id/courseContent"
                     android:layout_width="wrap_content"
@@ -94,7 +94,7 @@
                     android:textSize="14sp"
                     android:layout_marginTop="0dp"
                     android:layout_marginLeft="8dp"
-                    android:textColor="#444444"/>
+                    android:textColor="#7b7b7b"/>
 
             </LinearLayout>
             <LinearLayout
@@ -113,7 +113,7 @@
                     android:textSize="14sp"
                     android:layout_marginTop="0dp"
                     android:layout_marginLeft="8dp"
-                    android:textColor="#444444"/>
+                    android:textColor="#7b7b7b"/>
                 <TextView
                     android:id="@+id/courseContent2"
                     android:layout_width="wrap_content"
@@ -122,7 +122,7 @@
                     android:textSize="14sp"
                     android:layout_marginTop="0dp"
                     android:layout_marginLeft="8dp"
-                    android:textColor="#444444"/>
+                    android:textColor="#7b7b7b"/>
 
             </LinearLayout>
             <LinearLayout
@@ -139,7 +139,7 @@
                     android:textSize="14sp"
                     android:layout_marginTop="0dp"
                     android:layout_marginLeft="8dp"
-                    android:textColor="#444444"/>
+                    android:textColor="#7b7b7b"/>
                 <TextView
                     android:id="@+id/courseContent3"
                     android:layout_width="wrap_content"
@@ -148,7 +148,7 @@
                     android:textSize="14sp"
                     android:layout_marginTop="0dp"
                     android:layout_marginLeft="8dp"
-                    android:textColor="#444444"/>
+                    android:textColor="#7b7b7b"/>
 
             </LinearLayout>
 
