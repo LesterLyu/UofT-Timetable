@@ -82,12 +82,11 @@ public class DrawerActivity extends AppCompatActivity
         scale = displaymetrics.density;
 
 
-
+        fragment1 = new CourseListFragment();
         timetable_fall_fragment = TimetableFragment.newInstance("fall");
         timetable_winter_fragment = TimetableFragment.newInstance("winter");
         timetable_summer1_fragment = TimetableFragment.newInstance("summer1");
         timetable_summer2_fragment = TimetableFragment.newInstance("summer2");
-        fragment1 = new CourseListFragment();
         gradeFragment = GradeFragment.newInstance();
 
         setContentView(R.layout.activity_drawer);
@@ -360,27 +359,26 @@ public class DrawerActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navi_menu = navigationView.getMenu();
 
-        switch (defaultTimetable) {
-            case "0":
-                fragmentManager.beginTransaction().replace(R.id.flContent, timetable_fall_fragment).commit();
-                setTitle("Fall timetable");
-                navi_menu.getItem(1).setChecked(true);
-                break;
-            case "1":
-                fragmentManager.beginTransaction().replace(R.id.flContent, timetable_winter_fragment).commit();
-                setTitle("Winter timetable");
-                navi_menu.getItem(2).setChecked(true);
-                break;
-            case "2":
-                fragmentManager.beginTransaction().replace(R.id.flContent, timetable_summer1_fragment).commit();
-                setTitle("Summer timetable");
-                navi_menu.getItem(3).setChecked(true);
-                break;
-            case "3":
-                fragmentManager.beginTransaction().replace(R.id.flContent, timetable_summer2_fragment).commit();
-                setTitle("Summer timetable");
-                navi_menu.getItem(4).setChecked(true);
-                break;
+        System.out.println("setToDefaultTimetable to " + defaultTimetable);
+        if (defaultTimetable.equals("0") || defaultTimetable.isEmpty()) {
+            fragmentManager.beginTransaction().replace(R.id.flContent, timetable_fall_fragment).commit();
+            setTitle("Fall timetable");
+            navi_menu.getItem(1).setChecked(true);
+        }
+        else if(defaultTimetable.equals("1")) {
+            fragmentManager.beginTransaction().replace(R.id.flContent, timetable_winter_fragment).commit();
+            setTitle("Winter timetable");
+            navi_menu.getItem(2).setChecked(true);
+        }
+        else if(defaultTimetable.equals("2")) {
+            fragmentManager.beginTransaction().replace(R.id.flContent, timetable_summer1_fragment).commit();
+            setTitle("Summer timetable");
+            navi_menu.getItem(3).setChecked(true);
+        }
+        else if(defaultTimetable.equals("3")) {
+            fragmentManager.beginTransaction().replace(R.id.flContent, timetable_summer2_fragment).commit();
+            setTitle("Summer timetable");
+            navi_menu.getItem(4).setChecked(true);
         }
     }
 

@@ -10,13 +10,13 @@ Contact me via lvds2000@gmail.com
 
 ## TODO
 
- - Homescreen Widget
+ - [ ] Homescreen Widget
 
- - Show conflicts
+ - [ ] Show conflicts
 
- - Support summer timetable
+ - [x] Support summer timetable  
  
- - Show course info(description) in a better way
+ - [ ] Show course info(description) in a better way
 
 ## License
 
