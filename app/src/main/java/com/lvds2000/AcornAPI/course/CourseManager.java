@@ -2,23 +2,21 @@ package com.lvds2000.AcornAPI.course;
 
 import android.util.Log;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-
-
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
-
 import com.lvds2000.AcornAPI.auth.RegistrationManager;
 import com.lvds2000.AcornAPI.enrol.EnrolledCourse;
 import com.lvds2000.AcornAPI.enrol.Meeting;
 import com.lvds2000.AcornAPI.plan.PlannedCourse;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -111,7 +109,7 @@ public class CourseManager {
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
-
+                Log.e("loadEnrolledCourses", e.getMessage());
             }
 
             @Override
@@ -181,9 +179,10 @@ public class CourseManager {
             }
         });
         long prev = System.currentTimeMillis();
-        while(System.currentTimeMillis() - prev < 15000 && !loaded){
+        while(System.currentTimeMillis() - prev < 10000 && !loaded){
 
         }
+
         Log.i("loadEnrolledCourses", "consume " + (System.currentTimeMillis() - prev) + "ms");
 
     }

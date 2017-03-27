@@ -22,17 +22,16 @@
         android:inputType="textPassword"
         android:summary="Acorn login password" />
 
-    <SwitchPreference
+    <!--SwitchPreference
         android:key="debug_switch"
         android:title="Show all course info"
         android:summaryOn="Display all courses information"
         android:defaultValue="false"
-        android:summaryOff="Only display the courses you have"/>
+        android:summaryOff="Only display the courses you have"/-->
     <Preference
         android:key="about"
         android:title="Version"
-        android:summary="1.18 | 20"
-        />
+        android:summary="1.18 | 20" />
 
 
     <!-- NOTE: EditTextPreference accepts EditText attributes. -->

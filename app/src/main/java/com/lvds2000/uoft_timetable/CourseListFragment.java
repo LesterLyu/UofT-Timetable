@@ -49,12 +49,12 @@ public class CourseListFragment extends Fragment {
         String[][] activityCode = new String[3][totalCourseNum];
         String[][] activityContent = new String[3][totalCourseNum];
         Map<String, String> courseSeasonMap = new HashMap<>();
-        courseSeasonMap.put("9", " (Fall) ");
-        courseSeasonMap.put("1", " (Winter) ");
+        courseSeasonMap.put("9F", " (Fall) ");
+        courseSeasonMap.put("1S", " (Winter) ");
         courseSeasonMap.put("91", " (Full Session) ");
-        courseSeasonMap.put("5", " (Summer) ");
-        courseSeasonMap.put("5f", " (Summer First Sub-Session) ");
-        courseSeasonMap.put("5s", " (Summer Second Sub-Session) ");
+        courseSeasonMap.put("5Y", " (Summer Full Session) ");
+        courseSeasonMap.put("5F", " (Summer First Sub-Session) ");
+        courseSeasonMap.put("5S", " (Summer Second Sub-Session) ");
         if(TimetableFragment.courseList != null)
             for(int i = 0; i < totalCourseNum; i ++){
                 List<com.lvds2000.entity.Activity> activities = TimetableFragment.courseList[i].getActivities();
@@ -62,7 +62,7 @@ public class CourseListFragment extends Fragment {
                 //courseSeasonName = courseSeasonMap.get(TimetableFragment.courseList[i].getSectionCode());
                 // if the course is "fall"/ "summer"
                 if(TimetableFragment.courseList[i].getRegSessionCode2().equals(""))
-                    courseSeasonName = courseSeasonMap.get(TimetableFragment.courseList[i].getRegSessionCode1().substring(4));
+                    courseSeasonName = courseSeasonMap.get(TimetableFragment.courseList[i].getRegSessionCode1().substring(4) + TimetableFragment.courseList[i].getSectionCode());
                 else
                     courseSeasonName = courseSeasonMap.get(TimetableFragment.courseList[i].getRegSessionCode1().substring(4) +
                             TimetableFragment.courseList[i].getRegSessionCode2().substring(4));

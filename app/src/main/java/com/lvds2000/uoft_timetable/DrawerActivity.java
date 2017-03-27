@@ -41,8 +41,8 @@ public class DrawerActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     private static Fragment fragment1;
-    private static Fragment timetable_fall_fragment;
-    private static Fragment timetable_winter_fragment;
+    private static Fragment timetable_fall_fragment, timetable_winter_fragment,
+            timetable_summer1_fragment, timetable_summer2_fragment;
     private static Fragment gradeFragment;
     private static FragmentManager fragmentManager;
     public static float scale;
@@ -53,7 +53,7 @@ public class DrawerActivity extends AppCompatActivity
     private static Handler handler = new Handler();
     private static String mTitle = "Winter timetable";
     private static boolean initialized = false;
-    public static boolean DEBUG = false, isFall = true;
+    public static boolean DEBUG = false;
     private static Menu navi_menu;
     public static String versionName, currentVersionCode;
     private static ProgressDialog progress;
@@ -82,9 +82,12 @@ public class DrawerActivity extends AppCompatActivity
         scale = displaymetrics.density;
 
 
-        fragment1 = new CourseListFragment();
+
         timetable_fall_fragment = TimetableFragment.newInstance("fall");
         timetable_winter_fragment = TimetableFragment.newInstance("winter");
+        timetable_summer1_fragment = TimetableFragment.newInstance("summer1");
+        timetable_summer2_fragment = TimetableFragment.newInstance("summer2");
+        fragment1 = new CourseListFragment();
         gradeFragment = GradeFragment.newInstance();
 
         setContentView(R.layout.activity_drawer);
@@ -113,18 +116,7 @@ public class DrawerActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         if (savedInstanceState == null) {
             // default timetable
-            String defaultTimetable = Configuration.loadString("defaultTimetable", this);
-
-            if (defaultTimetable.equals("0")) {
-                fragmentManager.beginTransaction().replace(R.id.flContent, timetable_fall_fragment).commit();
-                setTitle("Fall timetable");
-                navi_menu.getItem(1).setChecked(true);
-            } else {
-                fragmentManager.beginTransaction().replace(R.id.flContent, timetable_winter_fragment).commit();
-                setTitle("Winter timetable");
-                navi_menu.getItem(2).setChecked(true);
-                isFall = false;
-            }
+            setToDefaultTimetable();
         }
         // restore from a destroyed activity
         else {
@@ -132,8 +124,12 @@ public class DrawerActivity extends AppCompatActivity
                 setTitle("Course List");
             } else if (navi_menu.getItem(1).isChecked()) {
                 setTitle("Fall timetable");
-            } else if (navi_menu.getItem(1).isChecked()) {
+            } else if (navi_menu.getItem(2).isChecked()) {
                 setTitle("Winter timetable");
+            } else if (navi_menu.getItem(3).isChecked() || navi_menu.getItem(4).isChecked()) {
+                setTitle("Summer timetable");
+            } else if (navi_menu.getItem(5).isChecked()) {
+                setTitle("Academic History");
             }
         }
 
@@ -151,10 +147,6 @@ public class DrawerActivity extends AppCompatActivity
         Configuration.saveString("versionName", "" + versionName, this);
     }
 
-
-    public static void setIsFall(boolean isFall){
-        DrawerActivity.isFall = isFall;
-    }
 
     @Override
     public void onBackPressed() {
@@ -190,6 +182,14 @@ public class DrawerActivity extends AppCompatActivity
         else if (id == R.id.winter_timetable) {
             mTitle = "Winter timetable";
             fragmentManager.beginTransaction().replace(R.id.flContent, timetable_winter_fragment).commit();
+        }
+        else if (id == R.id.summer1_timetable) {
+            mTitle = "Summer timetable";
+            fragmentManager.beginTransaction().replace(R.id.flContent, timetable_summer1_fragment).commit();
+        }
+        else if (id == R.id.summer2_timetable) {
+            mTitle = "Summer timetable";
+            fragmentManager.beginTransaction().replace(R.id.flContent, timetable_summer2_fragment).commit();
         }
         else if(id == R.id.grade_menu){
             mTitle = "Academic history";
@@ -317,15 +317,7 @@ public class DrawerActivity extends AppCompatActivity
         Collections.sort(courseList, new Comparator<com.lvds2000.entity.Course>() {
             @Override
             public int compare(com.lvds2000.entity.Course o1, com.lvds2000.entity.Course o2) {
-                if(o1.getSectionCode().equalsIgnoreCase("S") && (o2.getSectionCode().equalsIgnoreCase("Y") || o2.getSectionCode().equalsIgnoreCase("F")))
-                    return 1;
-                else if(o1.getSectionCode().equalsIgnoreCase("Y") && o2.getSectionCode().equalsIgnoreCase("F"))
-                    return 1;
-                else if(!o1.getSectionCode().equalsIgnoreCase(o2.getSectionCode()))
-                    return -1;
-                else{
-                    return o1.getCourseCode().compareToIgnoreCase(o2.getCourseCode());
-                }
+                return  TimetableFragment.getCourseSession(o1) - TimetableFragment.getCourseSession(o2);
             }
         });
 
@@ -346,36 +338,50 @@ public class DrawerActivity extends AppCompatActivity
             public void run() {
                 System.out.println("Returned");
                 try {
+                    // re-initialize
                     timetable_fall_fragment = TimetableFragment.newInstance("fall");
                     timetable_winter_fragment = TimetableFragment.newInstance("winter");
+                    timetable_summer1_fragment = TimetableFragment.newInstance("summer1");
+                    timetable_summer2_fragment = TimetableFragment.newInstance("summer2");
 
-                    // reset to fall timetable
-                    NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-                    navi_menu = navigationView.getMenu();
-                    MenuItem menuTimetable = navi_menu.getItem(1);
-
-                    if(navi_menu.getItem(1).isChecked()){
-                        getSupportActionBar().setTitle("Fall timetable");
-                        fragmentManager.beginTransaction().replace(R.id.flContent, timetable_fall_fragment).commitAllowingStateLoss();
-                    }
-                    else if(navi_menu.getItem(2).isChecked()){
-                        getSupportActionBar().setTitle("Winter timetable");
-                        fragmentManager.beginTransaction().replace(R.id.flContent, timetable_winter_fragment).commitAllowingStateLoss();
-                    }
-                    else if(navi_menu.getItem(0).isChecked()){
-                        getSupportActionBar().setTitle("Course list");
-                        fragmentManager.beginTransaction().replace(R.id.flContent, fragment1).commitAllowingStateLoss();
-                    }
-                    else if(navi_menu.getItem(3).isChecked()){
-                        getSupportActionBar().setTitle("Academic history");
-                    }
+                    setToDefaultTimetable();
 
                 }catch(Exception e){
                     System.out.println("Failed to import course info from acorn");
                 }
             }
         });
+    }
 
+    public void setToDefaultTimetable(){
+        // reset to default timetable
+        String defaultTimetable = Configuration.loadString("defaultTimetable", activity);
+
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navi_menu = navigationView.getMenu();
+
+        switch (defaultTimetable) {
+            case "0":
+                fragmentManager.beginTransaction().replace(R.id.flContent, timetable_fall_fragment).commit();
+                setTitle("Fall timetable");
+                navi_menu.getItem(1).setChecked(true);
+                break;
+            case "1":
+                fragmentManager.beginTransaction().replace(R.id.flContent, timetable_winter_fragment).commit();
+                setTitle("Winter timetable");
+                navi_menu.getItem(2).setChecked(true);
+                break;
+            case "2":
+                fragmentManager.beginTransaction().replace(R.id.flContent, timetable_summer1_fragment).commit();
+                setTitle("Summer timetable");
+                navi_menu.getItem(3).setChecked(true);
+                break;
+            case "3":
+                fragmentManager.beginTransaction().replace(R.id.flContent, timetable_summer2_fragment).commit();
+                setTitle("Summer timetable");
+                navi_menu.getItem(4).setChecked(true);
+                break;
+        }
     }
 
 }

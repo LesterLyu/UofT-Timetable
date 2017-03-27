@@ -3,9 +3,13 @@
     <string-array name="defaultTimetable">
         <item>Fall Timetable</item>
         <item>Winter Timetable</item>
+        <item>Summer First-Sub Session Timetable</item>
+        <item>Summer Second-Sub Session Timetable</item>
     </string-array>
     <string-array name="defaultTimetableValues">
         <item>0</item>
         <item>1</item>
+        <item>2</item>
+        <item>3</item>
     </string-array>
 </resources>

@@ -82,17 +82,7 @@ public class Setting extends AppCompatPreferenceActivity {
             passwordPref = (EditTextPreference) findPreference("password");
             versionField = findPreference("about");
             versionField.setSummary(DrawerActivity.versionName + " | "+ DrawerActivity.currentVersionCode);
-            defaultTimetable.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
-                @Override
-                public boolean onPreferenceChange(Preference preference, Object newValue) {
-                    if(newValue.equals("0"))
-                        DrawerActivity.setIsFall(true);
-                    else
-                        DrawerActivity.setIsFall(false);
 
-                    return true;
-                }
-            });
 
             // set text to saved password when clicked
             passwordPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {

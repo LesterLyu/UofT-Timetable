@@ -57,10 +57,14 @@ public class TimetableFragment extends Fragment {
     private String mode;
     private static final String ARG_PARAM1 = "mode";
     private Activity activity;
+    public static final int FALL = 0, FULL = 1, WINTER = 2, SUMMER_1 = 3, SUMMER_FULL = 4, SUMMER_2 = 5;
 
-
+    /**
+     *
+     * @param mode can be fall winter summer1 summer2
+     * @return new instance of TimetableFragment
+     */
     public static TimetableFragment newInstance(String mode) {
-
         // Load fragment
         TimetableFragment fragment = new TimetableFragment();
         Bundle args = new Bundle();
@@ -269,7 +273,7 @@ public class TimetableFragment extends Fragment {
         //delete rows
         try{
             if(!SHOW_ALL_ROWS) {
-                float earliest, latest;
+                float earliest = 7, latest = 22;
                 Date time[] = null;
                 try {
                     time = getEarliestAndLatestTime();
@@ -281,9 +285,17 @@ public class TimetableFragment extends Fragment {
                     earliest = time[0].getHours();
                     latest = time[1].getHours();
                 }
-                else{
+                else if(mode.equals("winter")){
                     earliest = time[2].getHours();
                     latest = time[3].getHours();
+                }
+                else if(mode.equals("summer1")){
+                    earliest = time[4].getHours();
+                    latest = time[5].getHours();
+                }
+                else if(mode.equals("summer2")){
+                    earliest = time[6].getHours();
+                    latest = time[7].getHours();
                 }
                 for (int i = 7; i < earliest; i++) {
                     for (int k = 0; k < 6; k++) {
@@ -322,11 +334,14 @@ public class TimetableFragment extends Fragment {
     }
 
     public static Date[] getEarliestAndLatestTime() throws ParseException {
+
         DateFormat format = new SimpleDateFormat("hh:mma", Locale.CANADA);
         // fall earliest, fall latest, winter earliest, winter latest
-        Date[] time = {format.parse("11:59PM"), format.parse("00:01AM"), format.parse("11:59PM"), format.parse("00:01AM")};
+        Date[] time = {format.parse("11:59PM"), format.parse("00:01AM"), format.parse("11:59PM"), format.parse("00:01AM"),
+                format.parse("11:59PM"), format.parse("00:01AM"), format.parse("11:59PM"), format.parse("00:01AM")};
         for(com.lvds2000.entity.Course course : courseList){
-            //System.out.println(plannedCourse.getCourseCode());
+            int courseSession = getCourseSession(course);
+
             List<com.lvds2000.entity.Activity> activities = course.getActivities();
             for(com.lvds2000.entity.Activity activity: activities){
                 if(activity.getDays() != null)
@@ -335,27 +350,48 @@ public class TimetableFragment extends Fragment {
                         Date endTime = null;
                         startTime = format.parse(day.getStartTime());
                         endTime = format.parse(day.getEndTime());
-                        if(course.getSectionCode().equalsIgnoreCase("F") || course.getSectionCode().equalsIgnoreCase("Y")){
+                        if(courseSession == FALL || courseSession == FULL){
                             if(startTime.before(time[0]))
                                 time[0] = startTime;
                             if(endTime.after(time[1]))
                                 time[1] = endTime;
                         }
-                        if(course.getSectionCode().equalsIgnoreCase("S") || course.getSectionCode().equalsIgnoreCase("Y")){
+                        if(courseSession == WINTER || courseSession == FULL){
                             if(startTime.before(time[2]))
                                 time[2] = startTime;
                             if(endTime.after(time[3]))
                                 time[3] = endTime;
                         }
+                        if(courseSession == SUMMER_FULL || courseSession == SUMMER_1){
+                            if(startTime.before(time[4]))
+                                time[4] = startTime;
+                            if(endTime.after(time[5]))
+                                time[5] = endTime;
+                        }
+                        if(courseSession == SUMMER_FULL || courseSession == SUMMER_2){
+                            if(startTime.before(time[6]))
+                                time[6] = startTime;
+                            if(endTime.after(time[7]))
+                                time[7] = endTime;
+                        }
                     }
             }
         }
-        if(time[1].getHours() - time[0].getHours() < 8){
-            time[1].setHours(time[0].getHours() + 8);
+        for(int i = 0; i < 4; i++) {
+            if (time[i * 2 + 1].getHours() - time[i * 2].getHours() < 9) {
+                if(time[i * 2].getHours() > 14)
+                    time[i * 2].setHours(time[i * 2 + 1].getHours() - 9);
+                else
+                    time[i * 2 + 1].setHours(time[i * 2].getHours() + 9);
+            }
         }
-        if(time[3].getHours() - time[2].getHours() < 8){
-            time[3].setHours(time[2].getHours() + 8);
-        }
+//        if(time[1].getHours() - time[0].getHours() < 9){
+//            time[1].setHours(time[0].getHours() + 9);
+//        }
+//        if(time[3].getHours() - time[2].getHours() < 9) {
+//            time[3].setHours(time[2].getHours() + 9);
+//        }
+
         return time;
     }
 
@@ -451,15 +487,43 @@ public class TimetableFragment extends Fragment {
         }
     }
 
+    /**
+     *
+     * @param course
+     * @return the int repr of the course seesion
+     */
+    public static int getCourseSession(com.lvds2000.entity.Course course){
+        Map<String, Integer> courseSeasonMap = new HashMap<>();
+        courseSeasonMap.put("9F", 0); // " (Fall) ");
+        courseSeasonMap.put("91", 1); //" (Full Session) ");
+        courseSeasonMap.put("1S", 2); //" (Winter) ");
+        courseSeasonMap.put("5F", 3); //" (Summer First Sub-Session) ");
+        courseSeasonMap.put("5Y", 4); //" (Summer Full Session) ");
+        courseSeasonMap.put("5S", 5); //" (Summer Second Sub-Session) ");
 
+        int courseSession;
+        if(course.getRegSessionCode2().equals(""))
+            courseSession = courseSeasonMap.get(course.getRegSessionCode1().substring(4) +
+                    course.getSectionCode());
+        else
+            courseSession = courseSeasonMap.get(course.getRegSessionCode1().substring(4) +
+                    course.getRegSessionCode2().substring(4));
+        return courseSession;
+    }
 
+    /**
+     * put values
+     */
     public void refreshCeil(){
+
         int courseNum = 0;
         for(com.lvds2000.entity.Course course : courseList){
             // select the corresponding courses to display
-            if(course.getSectionCode().equalsIgnoreCase("F") && mode.equals("fall") ||
-                    course.getSectionCode().equalsIgnoreCase("S") && mode.equals("winter") ||
-                    course.getSectionCode().equalsIgnoreCase("Y")) {
+            int courseSession = getCourseSession(course);
+            if((courseSession == FALL || courseSession == FULL) && mode.equals("fall") ||
+                    (courseSession == WINTER || courseSession == FULL) && mode.equals("winter") ||
+                    (courseSession == SUMMER_1 || courseSession == SUMMER_FULL) && mode.equals("summer1") ||
+                    (courseSession == SUMMER_2 || courseSession == SUMMER_FULL) && mode.equals("summer2")) {
                 List<com.lvds2000.entity.Activity> activities = course.getActivities();
                 String contentCourse, enrollment;
                 int startTime = -1, endTime = -1, weekNum = -1;
@@ -491,6 +555,7 @@ public class TimetableFragment extends Fragment {
                                     + activity.getActivityId() + "\n "
                                     + day.getRoomLocation() + "\n "
                                     + enrollment);
+
                             addContent(startTime, weekNum, endTime - startTime,
                                     contentCourse, courseList[courseNum], courseNum);
                         }

@@ -4,16 +4,20 @@
 
     <group android:checkableBehavior="single">
         <item android:id="@+id/course_list" android:icon="@drawable/ic_view_list_black_24dp"
-            android:title="Course list"/>
+            android:title="Course List"/>
         <item android:id="@+id/fall_timetable" android:icon="@drawable/ic_view_module_black_24dp"
-            android:title="Fall timetable"
+            android:title="Fall Timetable"
             android:checked="true"/>
         <item android:id="@+id/winter_timetable" android:icon="@drawable/ic_view_module_black_24dp"
-            android:title="Winter timetable" />
+            android:title="Winter Timetable" />
+        <item android:id="@+id/summer1_timetable" android:icon="@drawable/ic_view_module_black_24dp"
+            android:title="Summer F Timetable" />
+        <item android:id="@+id/summer2_timetable" android:icon="@drawable/ic_view_module_black_24dp"
+            android:title="Summer S Timetable" />
         <item android:id="@+id/grade_menu" android:icon="@drawable/ic_info_black_24dp"
             android:title="Academic History" />
         <item android:id="@+id/nav_manage" android:icon="@drawable/ic_import_export_black_24dp"
-            android:title="Import timetable"
+            android:title="Import Timetable"
             android:checkable="false"/>
 
     </group>

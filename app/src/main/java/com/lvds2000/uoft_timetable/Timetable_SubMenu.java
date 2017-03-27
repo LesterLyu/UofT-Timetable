@@ -154,7 +154,7 @@ public class Timetable_SubMenu extends AppCompatActivity {
         protected String doInBackground(final String... codes) {
             final String[] out = new String[2];
             try {
-                URL url = new URL("https://timetable.iit.artsci.utoronto.ca/api/courses?code=" + codes[0] + "&section=");
+                URL url = new URL("https://timetable.iit.artsci.utoronto.ca/api/20169/courses?code=" + codes[0]);
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 
                 conn.setReadTimeout(10000 /* milliseconds */);
