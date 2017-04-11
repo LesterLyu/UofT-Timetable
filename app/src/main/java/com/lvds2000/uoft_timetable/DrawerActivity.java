@@ -41,7 +41,7 @@ public class DrawerActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     private static Fragment fragment1;
-    private static Fragment timetable_fall_fragment, timetable_winter_fragment,
+    private static TimetableFragment timetable_fall_fragment, timetable_winter_fragment,
             timetable_summer1_fragment, timetable_summer2_fragment;
     private static Fragment gradeFragment;
     private static FragmentManager fragmentManager;
@@ -183,11 +183,11 @@ public class DrawerActivity extends AppCompatActivity
             fragmentManager.beginTransaction().replace(R.id.flContent, timetable_winter_fragment).commit();
         }
         else if (id == R.id.summer1_timetable) {
-            mTitle = "Summer timetable";
+            mTitle = "Summer F timetable";
             fragmentManager.beginTransaction().replace(R.id.flContent, timetable_summer1_fragment).commit();
         }
         else if (id == R.id.summer2_timetable) {
-            mTitle = "Summer timetable";
+            mTitle = "Summer S timetable";
             fragmentManager.beginTransaction().replace(R.id.flContent, timetable_summer2_fragment).commit();
         }
         else if(id == R.id.grade_menu){
@@ -336,18 +336,18 @@ public class DrawerActivity extends AppCompatActivity
             @Override
             public void run() {
                 System.out.println("Returned");
-                try {
-                    // re-initialize
-                    timetable_fall_fragment = TimetableFragment.newInstance("fall");
-                    timetable_winter_fragment = TimetableFragment.newInstance("winter");
-                    timetable_summer1_fragment = TimetableFragment.newInstance("summer1");
-                    timetable_summer2_fragment = TimetableFragment.newInstance("summer2");
-
-                    setToDefaultTimetable();
-
-                }catch(Exception e){
-                    System.out.println("Failed to import course info from acorn");
-                }
+                // re-initialize
+                timetable_fall_fragment.refresh();
+                timetable_winter_fragment.refresh();
+                timetable_summer1_fragment.refresh();
+                timetable_summer2_fragment.refresh();
+//                Fragment currentFragment = fragmentManager.findFragmentById(R.id.flContent);
+//                if (currentFragment instanceof TimetableFragment) {
+//                    FragmentTransaction fragTransaction =   fragmentManager.beginTransaction();
+//                    fragTransaction.detach(currentFragment);
+//                    fragTransaction.attach(currentFragment);
+//                    fragTransaction.commit();
+//                }
             }
         });
     }
@@ -372,12 +372,12 @@ public class DrawerActivity extends AppCompatActivity
         }
         else if(defaultTimetable.equals("2")) {
             fragmentManager.beginTransaction().replace(R.id.flContent, timetable_summer1_fragment).commit();
-            setTitle("Summer timetable");
+            setTitle("Summer F timetable");
             navi_menu.getItem(3).setChecked(true);
         }
         else if(defaultTimetable.equals("3")) {
             fragmentManager.beginTransaction().replace(R.id.flContent, timetable_summer2_fragment).commit();
-            setTitle("Summer timetable");
+            setTitle("Summer S timetable");
             navi_menu.getItem(4).setChecked(true);
         }
     }

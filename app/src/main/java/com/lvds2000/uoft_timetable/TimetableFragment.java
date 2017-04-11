@@ -7,7 +7,6 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
-import android.os.SystemClock;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.DisplayMetrics;
@@ -47,7 +46,6 @@ public class TimetableFragment extends Fragment {
     static int displayHeight;
     static int displayWidth;
     int rowSize;
-    float time1, time2;
     final boolean SHOW_ALL_ROWS = false;
     //private Context context;
     View view;
@@ -82,13 +80,13 @@ public class TimetableFragment extends Fragment {
         activity = getActivity();
 
         // load courseJson from storage
-        System.out.println("courseJson=" + courseJson);
+        //System.out.println("courseJson=" + courseJson);
         if(courseJson == null || courseJson.equals(""))
             courseJson = Configuration.loadString("courseJson", activity);
         Gson gson = new Gson();
         courseList = gson.fromJson(courseJson, com.lvds2000.entity.Course[].class);
 
-        Log.i("onAttach", mode + " Timetable Fragment attached");
+
         // get current device screen pixels
         displayMetrics = DrawerActivity.displaymetrics;
         displayHeight = displayMetrics.heightPixels;
@@ -121,14 +119,16 @@ public class TimetableFragment extends Fragment {
                 new Thread() {
                     @Override
                     public void run() {
-                        if(DrawerActivity.acorn == null || (UserInfo.getUsername(activity).isEmpty() || UserInfo.getPassword(activity).isEmpty())){
+                        if(UserInfo.getUsername(activity).isEmpty() || UserInfo.getPassword(activity).isEmpty()){
                             activity.runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
                                     swipeContainer.setRefreshing(false);
+                                    ((DrawerActivity)activity).downloadCoursesPrompt();
+                                    //UserInfo.promptInputUserPassAndUpdateCourseData((DrawerActivity) activity, null, swipeContainer);
                                 }
                             });
-                            UserInfo.promptInputUserPassAndUpdateCourseData((DrawerActivity) activity, null, swipeContainer);
+
                             return;
                         }
                         else if(UserInfo.isUserPassChanged(activity)){
@@ -215,10 +215,6 @@ public class TimetableFragment extends Fragment {
             }
         }
 
-        time2 = SystemClock.currentThreadTimeMillis();
-        System.out.println("Initialize cost: "+(time2 - time1)+"ms");
-        time1 = time2;
-
         // Add OnclickListener to invoke timetable submenu
         TextView.OnClickListener ocl = new TextView.OnClickListener() {
             @Override
@@ -252,11 +248,6 @@ public class TimetableFragment extends Fragment {
             }
 
         }
-        time2 = SystemClock.currentThreadTimeMillis();
-        System.out.println("Add OnClickListener cost: "+(time2 - time1)+"ms");
-        time1 = time2;
-
-
     }
 
     @Override
@@ -264,11 +255,39 @@ public class TimetableFragment extends Fragment {
         super.onCreate(savedInstanceState);
         System.out.println("Called onCreate");
 
-
-
-
         if (getArguments() != null)
             mode = getArguments().getString(ARG_PARAM1);
+
+        Log.i("onCreate", mode + " Timetable");
+
+        removeRows();
+    }
+
+    public void refresh(){
+        Log.i("TimetableRefresh", mode + " Timetable");
+
+        if(courseJson == null || courseJson.equals(""))
+            courseJson = Configuration.loadString("courseJson", activity);
+        Gson gson = new Gson();
+        courseList = gson.fromJson(courseJson, com.lvds2000.entity.Course[].class);
+
+        if(mode != null){
+            removeRows();
+            if(courseList != null)
+                refreshCeil();
+        }
+    }
+
+    private void removeRows(){
+        // reset to VISIBLE
+        for (int i = 0; i < numberOfRows; i++) {
+            for (int k = 0; k < numberOfColumns; k++) {
+                if(ll[i][k] != null)
+                    ll[i][k].setVisibility(View.VISIBLE);
+                if(tv[i][k] != null)
+                    tv[i][k].setVisibility(View.VISIBLE);
+            }
+        }
 
         //delete rows
         try{
@@ -277,9 +296,9 @@ public class TimetableFragment extends Fragment {
                 Date time[] = null;
                 try {
                     time = getEarliestAndLatestTime();
-                    System.out.println("time: " + time);
+                    //System.out.println("time: " + time);
                 } catch (ParseException e) {
-                    e.printStackTrace();
+                    Log.i("removeRows", "Uninitialized timetable");
                 }
                 if(mode.equals("fall")) {
                     earliest = time[0].getHours();
@@ -315,22 +334,8 @@ public class TimetableFragment extends Fragment {
                 }
             }
         }catch(NullPointerException e){
-            e.printStackTrace();
-            System.out.println("Warning: Empty timetable");
+            Log.i("removeRows", "Uninitialized timetable");
         }
-
-
-        time2 = SystemClock.currentThreadTimeMillis();
-        System.out.println("Delete Rows cost: "+(time2 - time1)+"ms");
-        time1 = time2;
-        if(courseList != null)
-            refreshCeil();
-
-        time2 = SystemClock.currentThreadTimeMillis();
-        System.out.println("Add Contents cost: "+(time2 - time1)+"ms");
-        time1 = time2;
-
-
     }
 
     public static Date[] getEarliestAndLatestTime() throws ParseException {
@@ -416,11 +421,11 @@ public class TimetableFragment extends Fragment {
     }
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        System.out.println("back");
+        //System.out.println("back");
         if (requestCode == 2) {
             if(resultCode == Activity.RESULT_OK){
                 int color=data.getIntExtra("COLOR", 0);
-                System.out.println("Color:"+color);
+                //System.out.println("Color:"+color);
                 if(color!=0){
                     selectedTextView.setBackgroundColor(color);
                     String code = selectedTextView.getText().toString().substring(1, 9);
@@ -433,7 +438,7 @@ public class TimetableFragment extends Fragment {
                     }
                     courseList[index].color = color;
                     Configuration.saveColor(activity);
-                    System.out.println("Saved color, index=" + index + ", code=" + code + ", color=" + courseList[index].color);
+                    //System.out.println("Saved color, index=" + index + ", code=" + code + ", color=" + courseList[index].color);
 
                 }
                 refreshCeil();

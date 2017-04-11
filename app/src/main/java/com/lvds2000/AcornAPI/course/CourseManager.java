@@ -182,7 +182,7 @@ public class CourseManager {
         while(System.currentTimeMillis() - prev < 10000 && !loaded){
 
         }
-
+        loaded = false;
         Log.i("loadEnrolledCourses", "consume " + (System.currentTimeMillis() - prev) + "ms");
 
     }
@@ -342,6 +342,7 @@ public class CourseManager {
             }});
         long prev = System.currentTimeMillis();
         while(System.currentTimeMillis() - prev < 15000 && !loaded){}
+        loaded = false;
         Log.i("loadPlannedCourse", "consume " + (System.currentTimeMillis() - prev) + "ms");
     }
 
