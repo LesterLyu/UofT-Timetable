@@ -45,7 +45,8 @@ public class TimetableFragment extends Fragment {
     static DisplayMetrics displayMetrics;
     static int displayHeight;
     static int displayWidth;
-    int rowSize;
+    private static int rowSize;
+    private static int minRowNums;
     final boolean SHOW_ALL_ROWS = false;
     //private Context context;
     View view;
@@ -93,6 +94,9 @@ public class TimetableFragment extends Fragment {
         displayWidth = displayMetrics.widthPixels;
         scale = displayMetrics.density;
         rowSize = getPx(60);
+        minRowNums = displayHeight / rowSize;
+        if(minRowNums > 15)
+            minRowNums = 15;
 
         LayoutInflater li = LayoutInflater.from(context);
         view = li.inflate(R.layout.activity_time_table2, null, false);
@@ -383,19 +387,14 @@ public class TimetableFragment extends Fragment {
             }
         }
         for(int i = 0; i < 4; i++) {
-            if (time[i * 2 + 1].getHours() - time[i * 2].getHours() < 9) {
-                if(time[i * 2].getHours() > 14)
-                    time[i * 2].setHours(time[i * 2 + 1].getHours() - 9);
-                else
-                    time[i * 2 + 1].setHours(time[i * 2].getHours() + 9);
+            //  calculate the start/end time difference and update them to display
+            while (time[i * 2 + 1].getHours() - time[i * 2].getHours() < minRowNums) {
+                if (time[i * 2].getHours() > 7)
+                    time[i * 2].setHours(time[i * 2].getHours() - 1);
+                if (time[i * 2 + 1].getHours() < 22)
+                    time[i * 2 + 1].setHours(time[i * 2 + 1].getHours() + 1);
             }
         }
-//        if(time[1].getHours() - time[0].getHours() < 9){
-//            time[1].setHours(time[0].getHours() + 9);
-//        }
-//        if(time[3].getHours() - time[2].getHours() < 9) {
-//            time[3].setHours(time[2].getHours() + 9);
-//        }
 
         return time;
     }
