@@ -21,7 +21,7 @@ Contact me via lvds2000@gmail.com
 ## Known Bugs (in Version 31)
 ### I can see all crashes on Google Play Console now even if users didn't report it. I will try to fix these bugs once I have time, after my assignments due...
  
-  - [ ] crash with waiting listed course
+  - [x] crash with waiting listed course
   
   `
   java.lang.NullPointerException: 
