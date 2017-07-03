@@ -29,7 +29,7 @@ Contact me via lvds2000@gmail.com
   at com.lvds2000.uoft_timetable.DrawerActivity.downloadCourseData(DrawerActivity.java:308)
   at com.lvds2000.uoft_timetable.DrawerActivity$3.run(DrawerActivity.java:257)
   `
-  - [ ] crash on slow devices/networks (synchronization problem)
+  - [ ] crash when refresh timetable in multiple views (synchronization problem)
   
   `
   java.util.ConcurrentModificationException: 
@@ -37,7 +37,7 @@ Contact me via lvds2000@gmail.com
   at com.lvds2000.uoft_timetable.DrawerActivity.downloadCourseData(DrawerActivity.java:306)
   at com.lvds2000.uoft_timetable.TimetableFragment$1$1.run(TimetableFragment.java:141)
   `
-  - [ ] can't instant update timetable if already logged in, it always re-login.
+  - [x] can't instant update timetable if already logged in, it always re-login.
   
   - [ ] course may persist there after modification made on acorn, need to re-open this app.
   
