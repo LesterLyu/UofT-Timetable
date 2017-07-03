@@ -29,7 +29,7 @@ public class Activity {
     private int waitlistRank;
 
     Activity(com.lvds2000.AcornAPI.plan.Activity activity){
-        activityId = activity.getActivityId();
+        activityId = activity.getActivityId() + "\n (in cart)";
         enroled = Boolean.parseBoolean(activity.getEnroled());
         commaSeparatedInstructorNames = activity.getCommaSeparatedInstructorNames();
         days = activity.getDays();
@@ -46,7 +46,10 @@ public class Activity {
      * @param isWaitlisted if this activity is in a waiting list
      */
     Activity(Meeting meeting, boolean isWaitlisted){
-        activityId = meeting.getDisplayName();
+        if(isWaitlisted)
+            activityId = meeting.getDisplayName() + "\n (rank: " + meeting.getWaitlistRank() + ")";
+        else
+            activityId = meeting.getDisplayName();
         enroled = !isWaitlisted;
         commaSeparatedInstructorNames = meeting.getCommaSeparatedInstructorNames();
         for(Time time: meeting.getTimes()){

@@ -81,9 +81,10 @@ public class Course {
         if(enrolledCourse.getStatus().equalsIgnoreCase("APP"))
             // Enrolled
             primaryActivityId = enrolledCourse.getPrimaryTeachMethod() + " " + enrolledCourse.getPrimarySectionNo();
-        else if(enrolledCourse.getStatus().equalsIgnoreCase("WAIT"))
-            // Waitlisted
-            primaryActivityId = enrolledCourse.getWaitlistTeachMethod() + " " + enrolledCourse.getWaitlistSectionNo().trim();
+        else if(enrolledCourse.getStatus().equalsIgnoreCase("WAIT") && enrolledCourse.getMeetingList().size() == 1){
+            // Waitlisted, only show the course with one waiting listed
+            primaryActivityId = (String) enrolledCourse.getWaitlistMeetings();
+        }
         secondaryActivityId = enrolledCourse.getSecondaryTeachMethod1() + " " + enrolledCourse.getSecondaryTeachMethod1();
         thirdActivityId = enrolledCourse.getSecondaryTeachMethod2() + " " + enrolledCourse.getSecondarySectionNo2();
         regSessionCode1 = enrolledCourse.getRegSessionCode1();

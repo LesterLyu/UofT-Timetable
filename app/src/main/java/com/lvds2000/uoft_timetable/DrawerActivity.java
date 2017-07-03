@@ -23,6 +23,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
 import com.google.gson.Gson;
 import com.lvds2000.AcornAPI.auth.Acorn;
 import com.lvds2000.AcornAPI.enrol.EnrolledCourse;
@@ -305,7 +307,17 @@ public class DrawerActivity extends AppCompatActivity
         List<EnrolledCourse> enrolledCourseList =  acorn.getCourseManager().getAppliedCourses();
         for(EnrolledCourse enrolledCourse: enrolledCourseList){
             Log.i("downloadCourseData", enrolledCourse.toString());
-            courseList.add(new com.lvds2000.entity.Course(enrolledCourse));
+            try{
+                courseList.add(new com.lvds2000.entity.Course(enrolledCourse));
+            } catch(Exception e){
+                Gson gson = new Gson();
+                Log.i("downloadCourseData", "Error" + e.getMessage() + "\n" + gson.toJson(enrolledCourse));
+                Tracker t = AnalyticsTrackers.getInstance().get(AnalyticsTrackers.Target.APP);
+                t.send(new HitBuilders.ExceptionBuilder()
+                        .setDescription( "Error \n" + gson.toJson(enrolledCourse))
+                        .setFatal(true)
+                        .build());
+            }
         }
         List<PlannedCourse> plannedCourseList =  acorn.getCourseManager().getPlannedCourses();
         for(PlannedCourse plannedCourse: plannedCourseList){

@@ -540,12 +540,8 @@ public class TimetableFragment extends Fragment {
                             dayToNum.put("Wednesday", 3);
                             dayToNum.put("Thursday", 4);
                             dayToNum.put("Friday", 5);
-                            Map<Boolean, String> enrollmentMap = new HashMap<Boolean, String>();
-                            enrollmentMap.put(true, "");
-                            enrollmentMap.put(false, "*not enrolled");
                             //System.out.println(day.getDayOfWeek());
                             weekNum = dayToNum.get(day.getDayOfWeek());
-                            enrollment = enrollmentMap.get(activity.getEnroled());
                             //System.out.println( weekNum[courseNum]);
                             SimpleDateFormat format = new SimpleDateFormat("hh:mma", Locale.CANADA);
                             try {
@@ -557,8 +553,7 @@ public class TimetableFragment extends Fragment {
 
                             contentCourse = ( " " + course.getCourseCode() + "\n "
                                     + activity.getActivityId() + "\n "
-                                    + day.getRoomLocation() + "\n "
-                                    + enrollment);
+                                    + day.getRoomLocation());
 
                             addContent(startTime, weekNum, endTime - startTime,
                                     contentCourse, courseList[courseNum], courseNum);
