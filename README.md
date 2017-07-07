@@ -40,6 +40,16 @@ Contact me via lvds2000@gmail.com
   java.lang.ArrayIndexOutOfBoundsException: 
   at com.lvds2000.uoft_timetable.CourseListFragment.onCreateView(CourseListFragment.java:81)
   `
+ ## Unknown Bugs
+ 
+  - [ ] ??? (8 reports)
+  
+  `
+  com.google.gson.JsonSyntaxException: 
+  at com.google.gson.JsonParser.parse(JsonParser.java:65)
+  at com.google.gson.JsonParser.parse(JsonParser.java:45)
+  at com.lvds2000.AcornAPI.course.CourseManager$1.onResponse(CourseManager.java:124)
+  `
   
  ## License
 
