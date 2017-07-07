@@ -2,6 +2,8 @@ package com.lvds2000.AcornAPI.course;
 
 import android.util.Log;
 
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -11,6 +13,7 @@ import com.lvds2000.AcornAPI.auth.RegistrationManager;
 import com.lvds2000.AcornAPI.enrol.EnrolledCourse;
 import com.lvds2000.AcornAPI.enrol.Meeting;
 import com.lvds2000.AcornAPI.plan.PlannedCourse;
+import com.lvds2000.uoft_timetable.AnalyticsTrackers;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -121,8 +124,19 @@ public class CourseManager {
                 if(!appliedCourseJson.equals("{}")) {
                     // process json
                     JsonParser parser = new JsonParser();
-                    JsonObject courseJsonObject = parser.parse(appliedCourseJson).getAsJsonObject();
-
+                    JsonObject courseJsonObject;
+                    try{
+                        courseJsonObject = parser.parse(appliedCourseJson).getAsJsonObject();
+                    } catch (Exception e) {
+                        Tracker t = AnalyticsTrackers.getInstance().get(AnalyticsTrackers.Target.APP);
+                        t.send(new HitBuilders.ExceptionBuilder()
+                                .setDescription( "Error \nappliedCourseJson=" + appliedCourseJson)
+                                .setFatal(true)
+                                .build());
+                        // ???? temp avoid exception
+                        appliedCourseJson = "{}";
+                        courseJsonObject = parser.parse(appliedCourseJson).getAsJsonObject();
+                    }
                     List<EnrolledCourse> enrolledCourseList;
                     List<EnrolledCourse> waitlistedCourseList;
                     List<EnrolledCourse> droppedCourseList;

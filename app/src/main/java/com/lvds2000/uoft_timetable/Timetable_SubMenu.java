@@ -3,7 +3,6 @@ package com.lvds2000.uoft_timetable;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -11,7 +10,6 @@ import android.text.Html;
 import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
@@ -44,15 +42,8 @@ public class Timetable_SubMenu extends AppCompatActivity {
         setContentView(R.layout.activity_timetable_sub_menu);
         this.setTitle("Course Menu");
         ActionBar actionBar = getSupportActionBar();
-        actionBar.setDisplayHomeAsUpEnabled(true);//Theme setting
-        actionBar.setBackgroundDrawable(getResources().getDrawable(R.drawable.actionbar));
-        // Check if we're running on Android 5.0 or higher
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            Window window = getWindow();
-            window.setStatusBarColor(getResources().getColor(R.color.md_indigo_700));
-        } else {
-            // Implement this feature without material design
-        }
+        if(actionBar != null)
+            actionBar.setDisplayHomeAsUpEnabled(true);
 
         Intent intent = this.getIntent();
         System.out.println(intent.getIntExtra("COLOR", 0));

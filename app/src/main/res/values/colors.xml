@@ -6,7 +6,7 @@
     <color name="event_color_04">#f8b552</color>
     <color name="toolbar">#efefef</color>
     <color name="toolbar_text">#8f000000</color>
-    <color name="accent">#2789e4</color>
+    <color name="accent">#3386d4</color>
     <color name="white">#ffffff</color>
 
 
@@ -74,12 +74,12 @@
         <color name="md_deep_purple_A700">#6200EA</color>
 
         <!-- indigo -->
-        <color name="md_indigo_50">#E8EAF6</color>
+        <color name="md_indigo_50">#e8eaf6</color>
         <color name="md_indigo_100">#C5CAE9</color>
         <color name="md_indigo_200">#9FA8DA</color>
         <color name="md_indigo_300">#7986CB</color>
         <color name="md_indigo_400">#5C6BC0</color>
-        <color name="md_indigo_500">#3F51B5</color>
+        <color name="md_indigo_500">#3f51b5</color>
         <color name="md_indigo_600">#3949AB</color>
         <color name="md_indigo_700">#303F9F</color>
         <color name="md_indigo_800">#283593</color>
@@ -96,7 +96,7 @@
         <color name="md_blue_300">#64B5F6</color>
         <color name="md_blue_400">#42A5F5</color>
         <color name="md_blue_500">#2196F3</color>
-        <color name="md_blue_600">#1E88E5</color>
+        <color name="md_blue_600">#1e88e5</color>
         <color name="md_blue_700">#1976D2</color>
         <color name="md_blue_800">#1565C0</color>
         <color name="md_blue_900">#0D47A1</color>
@@ -302,6 +302,7 @@
         <color name="md_blue_grey_700">#455A64</color>
         <color name="md_blue_grey_800">#37474F</color>
         <color name="md_blue_grey_900">#263238</color>
+    <color name="accent_blue">#2397f3</color>
 
 
 </resources>

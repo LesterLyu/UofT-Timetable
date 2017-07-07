@@ -53,6 +53,15 @@
     <string name="send_to">z</string>
     <string name="title_activity_setting">Setting</string>
     <string name="title_activity_settings">Settings</string>
+    <string name="title_activity_course_searcher">Search Course</string>
+    <string name="sample_course_description">
+        Programming in a language such as Python. Elementary data types, lists, maps.  Program structure: control flow, functions, classes, objects, methods. Algorithms and problem solving. Searching, sorting, and complexity. Unit testing. No prior programming experience required.
+\n\n
+NOTE: You may not take this course concurrently with CSC120H1/CSC148H1, but you may take CSC148H1 after CSC108H1.
+    </string>
+    <string name="course_code">Course Code</string>
+    <string name="search">Search</string>
+    <string name="sample_course_title">Introduction to Computer Programming</string>
 
 
 </resources>
