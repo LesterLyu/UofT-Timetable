@@ -54,7 +54,7 @@ public class UserInfo {
     /**
      * clear username and password
      */
-    public static void clearPassword(final DrawerActivity drawerActivity){
+    public static void clearPassword(final Context drawerActivity){
         //DrawerActivity.saveString("username", "");
         try {
             StringEncryptor encryptor = new StringEncryptor(drawerActivity);

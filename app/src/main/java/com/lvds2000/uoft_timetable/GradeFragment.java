@@ -14,7 +14,7 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 
 import com.lvds2000.AcornAPI.auth.Acorn;
-import com.lvds2000.AcornAPI.exception.LoginFailedException;
+import com.lvds2000.AcornAPI.auth.SimpleListener;
 import com.lvds2000.uoft_timetable.utils.Configuration;
 import com.lvds2000.uoft_timetable.utils.UserInfo;
 
@@ -99,48 +99,53 @@ public class GradeFragment extends Fragment {
                 if(UserInfo.isUserPassChanged(activity)){
                     DrawerActivity.acorn = new Acorn(UserInfo.getUsername(activity), UserInfo.getPassword(activity));
                 }
-                try {
-                    DrawerActivity.acorn.doLogin();
-                } catch (LoginFailedException e) {
-                    e.printStackTrace();
-                    final AlertDialog.Builder builder = new AlertDialog.Builder(activity);
-                    builder.setMessage(e.getMessage())
-                            .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                                public void onClick(final DialogInterface dialog, int id) {
-                                    activity.runOnUiThread(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            dialog.cancel();
-                                        }
-                                    });
-                                }
-                            });
-                    activity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            swipeContainer.setRefreshing(false);
-                            builder.create().show();
-                        }
-                    });
-                    return;
-                }
-                final String gradeHtml[] = new String[1];
-                gradeHtml[0] = "<link rel=\"stylesheet\" href=\"./css/bootstrap.min.css\">\n" +
-                        "<link rel=\"stylesheet\" href=\"./css/bootstrap-theme.min.css\">\n" +
-                        "<script src=\"./jquery.min.js\"></script>\n" +
-                        "<script src=\"./js/bootstrap.min.js\"></script>" + "";
-
-
-                gradeHtml[0] +=  DrawerActivity.acorn.getGradeManager().getGradeHtml();
-
-                Configuration.saveString("gradeHtml", gradeHtml[0], activity);
-
-                activity.runOnUiThread(new Runnable() {
+                DrawerActivity.acorn.doLogin(new SimpleListener() {
                     @Override
-                    public void run() {
-                        webView.loadDataWithBaseURL("file:///android_asset/", gradeHtml[0], "text/html", "UTF-8", null);
+                    public void success() {
+                        final String gradeHtml[] = new String[1];
+                        gradeHtml[0] = "<link rel=\"stylesheet\" href=\"./css/bootstrap.min.css\">\n" +
+                                "<link rel=\"stylesheet\" href=\"./css/bootstrap-theme.min.css\">\n" +
+                                "<script src=\"./jquery.min.js\"></script>\n" +
+                                "<script src=\"./js/bootstrap.min.js\"></script>" + "";
+
+
+                        gradeHtml[0] +=  DrawerActivity.acorn.getGradeManager().getGradeHtml();
+
+                        Configuration.saveString("gradeHtml", gradeHtml[0], activity);
+
+                        activity.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                webView.loadDataWithBaseURL("file:///android_asset/", gradeHtml[0], "text/html", "UTF-8", null);
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void failure(Exception e) {
+                        e.printStackTrace();
+                        final AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+                        builder.setMessage(e.getMessage())
+                                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                    public void onClick(final DialogInterface dialog, int id) {
+                                        activity.runOnUiThread(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                dialog.cancel();
+                                            }
+                                        });
+                                    }
+                                });
+                        activity.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                swipeContainer.setRefreshing(false);
+                                builder.create().show();
+                            }
+                        });
                     }
                 });
+
             }
         }.start();
     }

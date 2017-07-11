@@ -2,6 +2,7 @@ package com.lvds2000.uoft_timetable;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -27,8 +28,8 @@ import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
 import com.google.gson.Gson;
 import com.lvds2000.AcornAPI.auth.Acorn;
+import com.lvds2000.AcornAPI.auth.SimpleListener;
 import com.lvds2000.AcornAPI.enrol.EnrolledCourse;
-import com.lvds2000.AcornAPI.exception.LoginFailedException;
 import com.lvds2000.AcornAPI.plan.PlannedCourse;
 import com.lvds2000.uoft_timetable.utils.Configuration;
 import com.lvds2000.uoft_timetable.utils.UserInfo;
@@ -37,7 +38,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-
 
 public class DrawerActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -258,12 +258,8 @@ public class DrawerActivity extends AppCompatActivity
                 acorn = new Acorn(username, UserInfo.getPassword(this));
             }
             progress.show();
-            new Thread() {
-                @Override
-                public void run() {
-                    downloadCourseData(acorn, null);
-                }
-            }.start();
+            downloadCourseData(acorn, null);
+
         }
         // prompt user to input username and password
         else {
@@ -272,101 +268,108 @@ public class DrawerActivity extends AppCompatActivity
         }
     }
 
-    public void downloadCourseData(Acorn acorn, final SwipeRefreshLayout swipeContainer){
-        try {
-            acorn.doLogin();
-        } catch (LoginFailedException e) {
-            e.printStackTrace();
-            final AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setMessage(e.getMessage())
-                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                        public void onClick(final DialogInterface dialog, int id) {
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    dialog.cancel();
-                                    // this method may be called by another class
-                                    if(progress != null)
-                                        progress.cancel();
-                                    if(swipeContainer != null)
-                                        swipeContainer.setRefreshing(false);
-                                }
-                            });
-                        }
-                    });
-            // clear the password if the user input a wrong password
-            if(e.getMessage().contains("Username"))
-                UserInfo.clearPassword(this);
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    builder.create().show();
+    public void downloadCourseData(final Acorn acorn, final SwipeRefreshLayout swipeContainer){
+        final Context context = this;
+        acorn.doLogin(new SimpleListener() {
+            @Override
+            public void success() {
+                acorn.getCourseManager().loadCourses();
+                acorn.getCourseManager().getAppliedCourses();
+                List<com.lvds2000.entity.Course> courseList = new ArrayList<>();
+
+                List<EnrolledCourse> enrolledCourseList =  acorn.getCourseManager().getAppliedCourses();
+                for(EnrolledCourse enrolledCourse: enrolledCourseList){
+                    Log.i("downloadCourseData", enrolledCourse.toString());
+                    try{
+                        courseList.add(new com.lvds2000.entity.Course(enrolledCourse));
+                    } catch(Exception e){
+                        Gson gson = new Gson();
+                        Log.i("downloadCourseData", "Error" + e.getMessage() + "\n" + gson.toJson(enrolledCourse));
+                        Tracker t = AnalyticsTrackers.getInstance().get(AnalyticsTrackers.Target.APP);
+                        t.send(new HitBuilders.ExceptionBuilder()
+                                .setDescription( "Error \n" + gson.toJson(enrolledCourse))
+                                .setFatal(true)
+                                .build());
+                    }
                 }
-            });
-            return;
-        }
-        acorn.getCourseManager().loadCourses();
-        acorn.getCourseManager().getAppliedCourses();
-        List<com.lvds2000.entity.Course> courseList = new ArrayList<>();
+                List<PlannedCourse> plannedCourseList =  acorn.getCourseManager().getPlannedCourses();
+                for(PlannedCourse plannedCourse: plannedCourseList){
+                    Log.i("downloadCourseData", plannedCourse.toString());
+                    courseList.add(new com.lvds2000.entity.Course(plannedCourse));
+                }
 
-        List<EnrolledCourse> enrolledCourseList =  acorn.getCourseManager().getAppliedCourses();
-        for(EnrolledCourse enrolledCourse: enrolledCourseList){
-            Log.i("downloadCourseData", enrolledCourse.toString());
-            try{
-                courseList.add(new com.lvds2000.entity.Course(enrolledCourse));
-            } catch(Exception e){
+                Collections.sort(courseList, new Comparator<com.lvds2000.entity.Course>() {
+                    @Override
+                    public int compare(com.lvds2000.entity.Course o1, com.lvds2000.entity.Course o2) {
+                        return  TimetableFragment.getCourseSession(o1) - TimetableFragment.getCourseSession(o2);
+                    }
+                });
+
                 Gson gson = new Gson();
-                Log.i("downloadCourseData", "Error" + e.getMessage() + "\n" + gson.toJson(enrolledCourse));
-                Tracker t = AnalyticsTrackers.getInstance().get(AnalyticsTrackers.Target.APP);
-                t.send(new HitBuilders.ExceptionBuilder()
-                        .setDescription( "Error \n" + gson.toJson(enrolledCourse))
-                        .setFatal(true)
-                        .build());
-            }
-        }
-        List<PlannedCourse> plannedCourseList =  acorn.getCourseManager().getPlannedCourses();
-        for(PlannedCourse plannedCourse: plannedCourseList){
-            Log.i("downloadCourseData", plannedCourse.toString());
-            courseList.add(new com.lvds2000.entity.Course(plannedCourse));
-        }
 
-        Collections.sort(courseList, new Comparator<com.lvds2000.entity.Course>() {
+                String json =  gson.toJson(courseList);
+                TimetableFragment.setCourseJson(json);
+                Configuration.saveString("courseJson", json, context);
+
+
+                // this method may be called by another class
+                if(progress != null)
+                    progress.cancel();
+
+                // finish up
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        // re-initialize
+                        timetable_fall_fragment.refresh();
+                        timetable_winter_fragment.refresh();
+                        timetable_summer1_fragment.refresh();
+                        timetable_summer2_fragment.refresh();
+
+                        for (SwipeRefreshLayout swipeContainer : TimetableFragment.swipeContainers) {
+                            swipeContainer.setRefreshing(false);
+                        }
+                        TimetableFragment.updating = false;
+                    }
+                });
+            }
+
             @Override
-            public int compare(com.lvds2000.entity.Course o1, com.lvds2000.entity.Course o2) {
-                return  TimetableFragment.getCourseSession(o1) - TimetableFragment.getCourseSession(o2);
+            public void failure(Exception e) {
+                e.printStackTrace();
+                final AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                builder.setMessage(e.getMessage())
+                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            public void onClick(final DialogInterface dialog, int id) {
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        dialog.cancel();
+                                        // this method may be called by another class
+                                        if(progress != null)
+                                            progress.cancel();
+                                        for (SwipeRefreshLayout swipeContainer : TimetableFragment.swipeContainers) {
+                                            swipeContainer.setRefreshing(false);
+                                        }
+                                        TimetableFragment.updating = false;
+                                    }
+                                });
+                            }
+                        });
+                // clear the password if the user input a wrong password
+                if(e.getMessage().contains("Username"))
+                    UserInfo.clearPassword(context);
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        builder.create().show();
+                    }
+                });
+
             }
         });
 
-        Gson gson = new Gson();
 
-        String json =  gson.toJson(courseList);
-        TimetableFragment.setCourseJson(json);
-        Configuration.saveString("courseJson", json, this);
-
-
-        // this method may be called by another class
-        if(progress != null)
-            progress.cancel();
-
-        // finish up
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                System.out.println("Returned");
-                // re-initialize
-                timetable_fall_fragment.refresh();
-                timetable_winter_fragment.refresh();
-                timetable_summer1_fragment.refresh();
-                timetable_summer2_fragment.refresh();
-//                Fragment currentFragment = fragmentManager.findFragmentById(R.id.flContent);
-//                if (currentFragment instanceof TimetableFragment) {
-//                    FragmentTransaction fragTransaction =   fragmentManager.beginTransaction();
-//                    fragTransaction.detach(currentFragment);
-//                    fragTransaction.attach(currentFragment);
-//                    fragTransaction.commit();
-//                }
-            }
-        });
     }
 
     public void setToDefaultTimetable(){

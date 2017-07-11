@@ -77,6 +77,7 @@ public class CourseManager {
     }
 
     private void loadEnrolledCourses(final int registrationIndex){
+        loaded = false;
         JsonObject registionParams = registrationManager.getRegistrationParams(registrationIndex)
                 .get("registrationParams").getAsJsonObject();
         //System.out.println(registionParams);
@@ -188,15 +189,14 @@ public class CourseManager {
                             }
                         }
                     });
-                    loaded = true;
                 }
+                loaded = true;
             }
         });
         long prev = System.currentTimeMillis();
         while(System.currentTimeMillis() - prev < 10000 && !loaded){
 
         }
-        loaded = false;
         Log.i("loadEnrolledCourses", "consume " + (System.currentTimeMillis() - prev) + "ms");
 
     }

@@ -2,18 +2,17 @@ package com.lvds2000.AcornAPI.auth;
 
 import android.util.Log;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.jsoup.Jsoup;
-
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-
 import com.lvds2000.AcornAPI.exception.MoreThanOneRegistrationException;
+
+import org.jsoup.Jsoup;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -52,7 +51,7 @@ public class RegistrationManager {
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 String eligibleRegistrationsJson = response.body().string();
-                System.out.println(eligibleRegistrationsJson);
+                //System.out.println(eligibleRegistrationsJson);
                 // parse the readable string
                 JsonParser parser = new JsonParser();
                 registrationsArray = parser.parse(eligibleRegistrationsJson).getAsJsonArray();

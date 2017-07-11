@@ -29,6 +29,7 @@ import com.lvds2000.uoft_timetable.utils.UserInfo;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -45,7 +46,6 @@ public class TimetableFragment extends Fragment {
     static DisplayMetrics displayMetrics;
     static int displayHeight;
     static int displayWidth;
-    private static int rowSize;
     private static int minRowNums;
     final boolean SHOW_ALL_ROWS = false;
     //private Context context;
@@ -57,6 +57,10 @@ public class TimetableFragment extends Fragment {
     private static final String ARG_PARAM1 = "mode";
     private Activity activity;
     public static final int FALL = 0, FULL = 1, WINTER = 2, SUMMER_1 = 3, SUMMER_FULL = 4, SUMMER_2 = 5;
+    public static boolean updating = false;
+    // swipeContainer for this instance
+    private SwipeRefreshLayout swipeContainer;
+    public static List<SwipeRefreshLayout> swipeContainers = new ArrayList<>();
 
     /**
      *
@@ -93,7 +97,7 @@ public class TimetableFragment extends Fragment {
         displayHeight = displayMetrics.heightPixels;
         displayWidth = displayMetrics.widthPixels;
         scale = displayMetrics.density;
-        rowSize = getPx(60);
+        int rowSize = getPx(60);
         minRowNums = displayHeight / rowSize;
         if(minRowNums > 15)
             minRowNums = 15;
@@ -101,7 +105,7 @@ public class TimetableFragment extends Fragment {
         LayoutInflater li = LayoutInflater.from(context);
         view = li.inflate(R.layout.activity_time_table2, null, false);
 
-        final SwipeRefreshLayout swipeContainer = (SwipeRefreshLayout) view.findViewById(R.id.swipeContainer);
+        swipeContainer = (SwipeRefreshLayout) view.findViewById(R.id.swipeContainer);
         //swipeContainer.setDistanceToTriggerSync(30);
 
         swipeContainer.setColorSchemeResources(android.R.color.holo_blue_bright,
@@ -109,45 +113,36 @@ public class TimetableFragment extends Fragment {
                 android.R.color.holo_orange_light,
                 android.R.color.holo_red_light);
 
-//        swipeContainer.post(new Runnable() {
-//            @Override
-//            public void run() {
-//                swipeContainer.setRefreshing(true);
-//            }
-//        });
+        swipeContainer.post(new Runnable() {
+            @Override
+            public void run() {
+                if(updating)
+                    swipeContainer.setRefreshing(true);
+            }
+        });
+        swipeContainers.add(swipeContainer);
 
         swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
+                if (updating) {
+                    return;
+                }
+                updating = true;
 
-                new Thread() {
-                    @Override
-                    public void run() {
-                        if(UserInfo.getUsername(activity).isEmpty() || UserInfo.getPassword(activity).isEmpty()){
-                            activity.runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    swipeContainer.setRefreshing(false);
-                                    ((DrawerActivity)activity).downloadCoursesPrompt();
-                                    //UserInfo.promptInputUserPassAndUpdateCourseData((DrawerActivity) activity, null, swipeContainer);
-                                }
-                            });
+                if (UserInfo.getUsername(activity).isEmpty() || UserInfo.getPassword(activity) == null || UserInfo.getPassword(activity).isEmpty()) {
 
-                            return;
-                        }
-                        else if(UserInfo.isUserPassChanged(activity)){
-                            DrawerActivity.acorn = new Acorn(UserInfo.getUsername(activity), UserInfo.getPassword(activity));
-                        }
-                        ((DrawerActivity)activity).downloadCourseData(DrawerActivity.acorn, swipeContainer);
-                        activity.runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                swipeContainer.setRefreshing(false);
-                            }
-                        });
-                    }
-                }.start();
+                    swipeContainer.setRefreshing(false);
+                    ((DrawerActivity) activity).downloadCoursesPrompt();
+                    return;
+                } else if (UserInfo.isUserPassChanged(activity)) {
+                    Log.i("Refresh", "user/pass changed");
+                    DrawerActivity.acorn = new Acorn(UserInfo.getUsername(activity), UserInfo.getPassword(activity));
+                }
+                ((DrawerActivity) activity).downloadCourseData(DrawerActivity.acorn, swipeContainer);
+
             }
+
         });
 
 
@@ -288,8 +283,11 @@ public class TimetableFragment extends Fragment {
             for (int k = 0; k < numberOfColumns; k++) {
                 if(ll[i][k] != null)
                     ll[i][k].setVisibility(View.VISIBLE);
-                if(tv[i][k] != null)
+                if(tv[i][k] != null){
+                    if(k != 0)
+                        tv[i][k].setText("");
                     tv[i][k].setVisibility(View.VISIBLE);
+                }
             }
         }
 
@@ -467,7 +465,8 @@ public class TimetableFragment extends Fragment {
         param.topMargin = 1;
         param.columnSpec = GridLayout.spec(col_int);
 
-        if(!(row_int==row) || !(col_int==col) || !(rowspan_int==rowspan_int)) {
+        // TO-DO fix this
+        if(!(row_int==row) || !(col_int==col) || !(rowspan_int==rowspan)) {
             System.out.println("an abnormal time");
             System.out.println(row_dec_top+" "+"?"+" "+row_dec_bot);
             System.out.println(top_weight+" "+mid_weight+" "+bot_weight);
@@ -519,7 +518,6 @@ public class TimetableFragment extends Fragment {
      * put values
      */
     public void refreshCeil(){
-
         int courseNum = 0;
         for(com.lvds2000.entity.Course course : courseList){
             // select the corresponding courses to display
@@ -619,6 +617,7 @@ public class TimetableFragment extends Fragment {
 
     @Override
     public void onDetach() {
+        swipeContainers.remove(swipeContainer);
         super.onDetach();
     }
 
