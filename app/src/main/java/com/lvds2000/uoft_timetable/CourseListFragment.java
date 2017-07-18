@@ -126,7 +126,7 @@ class CustomListAdapter1 extends ArrayAdapter<String> {
 
 
     public CustomListAdapter1(Activity context, String[] courseTitle, String[] courseLeftIcon, String courseName[],String[][] activityCode, String[][] activityContent) {
-        super(context, R.layout.mylist, courseTitle);
+        super(context, R.layout.course_list, courseTitle);
 
         this.context = context;
         this.courseTitle = courseTitle;
@@ -138,7 +138,7 @@ class CustomListAdapter1 extends ArrayAdapter<String> {
 
     public View getView(int position,View view,ViewGroup parent) {
         LayoutInflater inflater=context.getLayoutInflater();
-        View rowView=inflater.inflate(R.layout.mylist, null, true);
+        View rowView=inflater.inflate(R.layout.course_list, null, true);
 
         TextView txtTitle = (TextView) rowView.findViewById(R.id.item);
         TextView leftView = (TextView) rowView.findViewById(R.id.icon);

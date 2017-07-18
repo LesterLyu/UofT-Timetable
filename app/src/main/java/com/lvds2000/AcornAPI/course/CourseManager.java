@@ -39,7 +39,7 @@ public class CourseManager {
 
     private RegistrationManager registrationManager;
 
-    private boolean loaded = false;
+    private boolean loaded = false, loaded2 = false;
 
     /**
      * includes enrolled courses and waiting listed courses and dropped(late withdraw) courses
@@ -208,7 +208,7 @@ public class CourseManager {
      * @return a complete EnrolledCourse
      */
     private EnrolledCourse loadExtraInfo(String courseCode, String courseSessionCode, String sectionCode, int registrationIndex){
-        loaded = false;
+        loaded2 = false;
         JsonObject registionParams = registrationManager.getRegistrationParams(registrationIndex)
                 .get("registrationParams").getAsJsonObject();
         //System.out.println(registionParams);
@@ -262,12 +262,12 @@ public class CourseManager {
                     JsonParser parser = new JsonParser();
                     JsonObject courseJsonObject = parser.parse(courseJson).getAsJsonObject().get("responseObject").getAsJsonObject();
                     res[0] = gson.fromJson(courseJsonObject, EnrolledCourse.class);
-                    loaded = true;
+                    loaded2 = true;
                 }
             });
 
             long prev = System.currentTimeMillis();
-            while(System.currentTimeMillis() - prev < 15000 && !loaded){}
+            while(System.currentTimeMillis() - prev < 15000 && !loaded2){}
             Log.i("loadExtraInfo", "consume " + (System.currentTimeMillis() - prev) + "ms");
             return res[0];
 

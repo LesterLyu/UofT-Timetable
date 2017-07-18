@@ -57,6 +57,7 @@ public class TimetableFragment extends Fragment {
     private static final String ARG_PARAM1 = "mode";
     private Activity activity;
     public static final int FALL = 0, FULL = 1, WINTER = 2, SUMMER_1 = 3, SUMMER_FULL = 4, SUMMER_2 = 5;
+    private static int rowSize;
     public static boolean updating = false;
     // swipeContainer for this instance
     private SwipeRefreshLayout swipeContainer;
@@ -97,7 +98,7 @@ public class TimetableFragment extends Fragment {
         displayHeight = displayMetrics.heightPixels;
         displayWidth = displayMetrics.widthPixels;
         scale = displayMetrics.density;
-        int rowSize = getPx(60);
+        rowSize = getPx(60);
         minRowNums = displayHeight / rowSize;
         if(minRowNums > 15)
             minRowNums = 15;
@@ -278,14 +279,28 @@ public class TimetableFragment extends Fragment {
     }
 
     private void removeRows(){
-        // reset to VISIBLE
+        // reset to VISIBLE and default setting
         for (int i = 0; i < numberOfRows; i++) {
             for (int k = 0; k < numberOfColumns; k++) {
-                if(ll[i][k] != null)
+                if(ll[i][k] != null){
+                    if(k != 0){
+                        GridLayout.LayoutParams param = new GridLayout.LayoutParams();
+                        param.height = rowSize;
+                        param.width = (displayWidth) / 11 * 2 - 5;
+                        param.rightMargin = 5;
+                        param.topMargin = 1;
+                        param.rowSpec = GridLayout.spec(i);
+                        param.columnSpec = GridLayout.spec(k);
+                        ll[i][k].setLayoutParams(param);
+                    }
                     ll[i][k].setVisibility(View.VISIBLE);
+                }
                 if(tv[i][k] != null){
-                    if(k != 0)
+                    if(k != 0){
+
                         tv[i][k].setText("");
+                        tv[i][k].setBackgroundResource(R.drawable.cell_shape_bot);
+                    }
                     tv[i][k].setVisibility(View.VISIBLE);
                 }
             }
@@ -457,7 +472,7 @@ public class TimetableFragment extends Fragment {
         int mid_weight = 1000 - top_weight - bot_weight;
 
 
-        GridLayout.LayoutParams param =new GridLayout.LayoutParams();
+        GridLayout.LayoutParams param = new GridLayout.LayoutParams();
         param.rowSpec = GridLayout.spec(row_int, rowspan_int);
         param.setGravity(Gravity.FILL_VERTICAL);
         param.width = (displayWidth)/11*2-5;
