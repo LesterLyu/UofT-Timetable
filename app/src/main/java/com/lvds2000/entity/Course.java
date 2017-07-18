@@ -95,8 +95,10 @@ public class Course {
             for(Meeting meeting: enrolledCourse.getMeetings()) {
                 if(enrolledCourse.getStatus().equalsIgnoreCase("APP"))
                     activities.add(new Activity(meeting, false));
-                else if(enrolledCourse.getStatus().equalsIgnoreCase("WAIT"))
+                else if(enrolledCourse.getStatus().equalsIgnoreCase("WAIT")
+                        && ((String)enrolledCourse.getWaitlistMeetings()).contains(meeting.getSectionNo()))
                     activities.add(new Activity(meeting, true));
+
             }
     }
 

@@ -22,10 +22,10 @@
 
     </group>
 
-    <!--<group android:id="@+id/courseSearcherGroup">-->
-        <!--<item android:id="@+id/courseSearcher" android:icon="@android:drawable/ic_menu_search"-->
-            <!--android:title="Search Course"/>-->
-    <!--</group>-->
+    <group android:id="@+id/courseSearcherGroup">
+        <item android:id="@+id/courseSearcher" android:icon="@android:drawable/ic_menu_search"
+            android:title="Search Course"/>
+    </group>
 
 
     <item android:title="Communicate">

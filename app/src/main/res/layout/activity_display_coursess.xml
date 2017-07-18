@@ -1,18 +1,10 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_height="match_parent"
     android:layout_width="match_parent">
-    <!-- A CardView that contains a TextView -->
-    <ListView
+
+    <android.support.v7.widget.RecyclerView
         android:id="@+id/courseListView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:footerDividersEnabled="false"
-        android:headerDividersEnabled="false"
-        android:listSelector="@android:color/transparent"
-        android:divider="@android:color/transparent"
-        >
-
-    </ListView>
-
-
+        android:scrollbars="vertical"/>
 </LinearLayout>

@@ -223,11 +223,11 @@ public class DrawerActivity extends AppCompatActivity
             Intent intent = new Intent(this, Setting.class);
             startActivity(intent);
         }
-//        else if(id==R.id.courseSearcher){
-//            CLOSE_DRAWER = false;
-//            Intent intent = new Intent(this, CourseSearcherActivity.class);
-//            startActivity(intent);
-//        }
+        else if(id==R.id.courseSearcher){
+            CLOSE_DRAWER = false;
+            Intent intent = new Intent(this, CourseSearcherActivity.class);
+            startActivity(intent);
+        }
         // create a new thread to close the drawer after 10ms.
         // this will make the animation smoother.
         if(CLOSE_DRAWER)

@@ -4,12 +4,12 @@ import android.app.Activity;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.lvds2000.AcornAPI.plan.Day;
@@ -23,7 +23,7 @@ public class CourseListFragment extends Fragment {
 
 
     private View view;
-    private ListView lv;
+    private RecyclerView rv;
 
     public CourseListFragment() {
     }
@@ -37,7 +37,7 @@ public class CourseListFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.activity_display_coursess, container, false);
-        lv = (ListView)view.findViewById(R.id.courseListView);
+        rv = (RecyclerView)view.findViewById(R.id.courseListView);
 
         int totalCourseNum = 1;
         if(TimetableFragment.courseList != null)
@@ -81,9 +81,6 @@ public class CourseListFragment extends Fragment {
                     activityCode[j][i] = activities.get(j).getActivityId();
                     activityContent[j][i] = displayTime.trim();
                 }
-
-
-
             }
         else{
             for(int i=0; i<totalCourseNum; i++){
@@ -93,18 +90,18 @@ public class CourseListFragment extends Fragment {
             }
         }
 
-        CustomListAdapter1 adapter=new CustomListAdapter1(getActivity(), courseTitle, courseLeftIcon, courseName, activityCode, activityContent);
+        // use this setting to improve performance if you know that changes
+        // in content do not change the layout size of the RecyclerView
+        //rv.setHasFixedSize(true);
 
-        lv.setAdapter(adapter);
+        // use a linear layout manager
+        RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getContext());
+        rv.setLayoutManager(mLayoutManager);
 
 
-        lv.setOnItemClickListener(new ListView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                //String s = Courses.course[(int)id].getLectureWeekday(1)+" "+Courses.course[(int)id].getLectureStartTime(1)+" "+Courses.course[(int)id].getLectureEndTime(1);
-                //Toast.makeText(getApplicationContext(), id+" "+s, Toast.LENGTH_SHORT).show();
-            }
-        });
+        CustomListAdapter1 adapter = new CustomListAdapter1(getActivity(), courseTitle, courseLeftIcon, courseName, activityCode, activityContent);
+        rv.setAdapter(adapter);
+
         return view;
     }
 
@@ -114,7 +111,7 @@ public class CourseListFragment extends Fragment {
     }
 
 }
-class CustomListAdapter1 extends ArrayAdapter<String> {
+class CustomListAdapter1 extends RecyclerView.Adapter<CustomListAdapter1.ViewHolder> {
 
     private final Activity context;
     private final String[] courseTitle;
@@ -122,12 +119,22 @@ class CustomListAdapter1 extends ArrayAdapter<String> {
     private final String[] courseLeftIcon;
     private final String[][] activityId;
     private final String[][] courseContent;
-    private Color[] color = new Color[10];
 
+    // Provide a reference to the views for each data item
+    // Complex data items may need more than one view per item, and
+    // you provide access to all the views for a data item in a view holder
+    static class ViewHolder extends RecyclerView.ViewHolder {
+        // each data item is just a string in this case
+        View rowView;
+        ViewHolder(View v) {
+            super(v);
+            rowView = v;
+        }
+    }
 
-    public CustomListAdapter1(Activity context, String[] courseTitle, String[] courseLeftIcon, String courseName[],String[][] activityCode, String[][] activityContent) {
-        super(context, R.layout.course_list, courseTitle);
-
+    // Provide a suitable constructor (depends on the kind of dataset)
+    CustomListAdapter1(Activity context, String[] courseTitle, String[] courseLeftIcon,
+                       String courseName[],String[][] activityCode, String[][] activityContent) {
         this.context = context;
         this.courseTitle = courseTitle;
         this.courseLeftIcon = courseLeftIcon;
@@ -136,9 +143,24 @@ class CustomListAdapter1 extends ArrayAdapter<String> {
         this.courseContent = activityContent;
     }
 
-    public View getView(int position,View view,ViewGroup parent) {
-        LayoutInflater inflater=context.getLayoutInflater();
-        View rowView=inflater.inflate(R.layout.course_list, null, true);
+
+    @Override
+    public CustomListAdapter1.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        View rowView = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.course_list, parent, false);
+        View innerView = rowView.findViewById(R.id.card_view);
+        innerView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //Toast.makeText(context,((TextView) v.findViewById(R.id.item)).getText(), Toast.LENGTH_SHORT).show();
+            }
+        });
+        return new ViewHolder(rowView);
+    }
+
+    @Override
+    public void onBindViewHolder(CustomListAdapter1.ViewHolder holder, int position) {
+        View rowView = holder.rowView;
 
         TextView txtTitle = (TextView) rowView.findViewById(R.id.item);
         TextView leftView = (TextView) rowView.findViewById(R.id.icon);
@@ -149,7 +171,6 @@ class CustomListAdapter1 extends ArrayAdapter<String> {
         TextView courseContentTV2 = (TextView) rowView.findViewById(R.id.courseContent2);
         TextView activityIdTV3 = (TextView) rowView.findViewById(R.id.activityId3);
         TextView courseContentTV3 = (TextView) rowView.findViewById(R.id.courseContent3);
-
 
         txtTitle.setText(courseTitle[position]);
         leftView.setText(courseLeftIcon[position]);
@@ -182,10 +203,18 @@ class CustomListAdapter1 extends ArrayAdapter<String> {
             activityIdTV3.setVisibility(View.GONE);
             courseContentTV3.setVisibility(View.GONE);
         }
-        return rowView;
+        holder.rowView.setLayoutParams(new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT ,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        ));
     }
 
-    public int pickColor(int position){
+    @Override
+    public int getItemCount() {
+        return courseTitle.length;
+    }
+
+    private int pickColor(int position){
         Random rnd = new Random();
         int color;
         switch(position) {
@@ -230,4 +259,6 @@ class CustomListAdapter1 extends ArrayAdapter<String> {
                 return color;
         }
     }
+
+
 }
