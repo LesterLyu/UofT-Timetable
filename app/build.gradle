@@ -7,7 +7,7 @@ android {
         applicationId "com.lvds2000.utsccsuntility"
         minSdkVersion 15
         targetSdkVersion 25
-        versionCode 38
+        versionCode 39
         versionName "1.27"
     }
     buildTypes {
