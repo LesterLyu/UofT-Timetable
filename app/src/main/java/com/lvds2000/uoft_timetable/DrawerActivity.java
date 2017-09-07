@@ -61,7 +61,6 @@ public class DrawerActivity extends AppCompatActivity
     private static ProgressDialog progress;
     public static Acorn acorn;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         activity = this;
@@ -173,27 +172,27 @@ public class DrawerActivity extends AppCompatActivity
         boolean CLOSE_DRAWER = true;
 
         if (id == R.id.course_list) {
-            mTitle = "Course list";
+            mTitle = "Course List";
             fragmentManager.beginTransaction().replace(R.id.flContent, fragment1).commit();
         }
         else if (id == R.id.fall_timetable) {
-            mTitle = "Fall timetable";
+            mTitle = "Fall Timetable";
             fragmentManager.beginTransaction().replace(R.id.flContent, timetable_fall_fragment).commit();
         }
         else if (id == R.id.winter_timetable) {
-            mTitle = "Winter timetable";
+            mTitle = "Winter Timetable";
             fragmentManager.beginTransaction().replace(R.id.flContent, timetable_winter_fragment).commit();
         }
         else if (id == R.id.summer1_timetable) {
-            mTitle = "Summer F timetable";
+            mTitle = "Summer F Timetable";
             fragmentManager.beginTransaction().replace(R.id.flContent, timetable_summer1_fragment).commit();
         }
         else if (id == R.id.summer2_timetable) {
-            mTitle = "Summer S timetable";
+            mTitle = "Summer S Timetable";
             fragmentManager.beginTransaction().replace(R.id.flContent, timetable_summer2_fragment).commit();
         }
         else if(id == R.id.grade_menu){
-            mTitle = "Academic history";
+            mTitle = "Academic History";
             fragmentManager.beginTransaction().replace(R.id.flContent, gradeFragment).commit();
         }
         getSupportActionBar().setTitle(mTitle);
@@ -274,7 +273,6 @@ public class DrawerActivity extends AppCompatActivity
             @Override
             public void success() {
                 acorn.getCourseManager().loadCourses();
-                acorn.getCourseManager().getAppliedCourses();
                 List<com.lvds2000.entity.Course> courseList = new ArrayList<>();
 
                 List<EnrolledCourse> enrolledCourseList =  acorn.getCourseManager().getAppliedCourses();
@@ -382,24 +380,64 @@ public class DrawerActivity extends AppCompatActivity
         System.out.println("setToDefaultTimetable to " + defaultTimetable);
         if (defaultTimetable.equals("0") || defaultTimetable.isEmpty()) {
             fragmentManager.beginTransaction().replace(R.id.flContent, timetable_fall_fragment).commit();
-            setTitle("Fall timetable");
+            setTitle("Fall Timetable");
             navi_menu.getItem(1).setChecked(true);
         }
         else if(defaultTimetable.equals("1")) {
             fragmentManager.beginTransaction().replace(R.id.flContent, timetable_winter_fragment).commit();
-            setTitle("Winter timetable");
+            setTitle("Winter Timetable");
             navi_menu.getItem(2).setChecked(true);
         }
         else if(defaultTimetable.equals("2")) {
             fragmentManager.beginTransaction().replace(R.id.flContent, timetable_summer1_fragment).commit();
-            setTitle("Summer F timetable");
+            setTitle("Summer F Timetable");
             navi_menu.getItem(3).setChecked(true);
         }
         else if(defaultTimetable.equals("3")) {
             fragmentManager.beginTransaction().replace(R.id.flContent, timetable_summer2_fragment).commit();
-            setTitle("Summer S timetable");
+            setTitle("Summer S Timetable");
             navi_menu.getItem(4).setChecked(true);
         }
     }
+//
+//    @Override
+//    public void onSaveInstanceState(Bundle savedInstanceState){
+//        super.onSaveInstanceState(savedInstanceState);
+//        // save title
+//        if (navi_menu.getItem(0).isChecked()) {
+//            savedInstanceState.putString("title" ,"Course List");
+//        } else if (navi_menu.getItem(1).isChecked()) {
+//            savedInstanceState.putString("title" ,"Fall Timetable");
+//        } else if (navi_menu.getItem(2).isChecked()) {
+//            savedInstanceState.putString("title" ,"Winter Timetable");
+//        } else if (navi_menu.getItem(3).isChecked() || navi_menu.getItem(4).isChecked()) {
+//            savedInstanceState.putString("title" ,"Summer Timetable");
+//        } else if (navi_menu.getItem(5).isChecked()) {
+//            savedInstanceState.putString("title" ,"Academic History");
+//        }
+//        // save if the acorn object has been used to download timetable
+//        savedInstanceState.putBoolean("is_used" ,acorn.is_used());
+//
+//    }
+//
+//    @Override
+//    public void onRestoreInstanceState(Bundle savedInstanceState){
+//        super.onRestoreInstanceState(savedInstanceState);
+//        setTitle(savedInstanceState.getString("title"));
+//        Log.i("onRestoreInstanceState" ,"restore states");
+//        if(savedInstanceState.getBoolean("is_used")){
+//            acorn.isLoggedIn(new SimpleListener() {
+//                @Override
+//                public void success() {
+//                }
+//
+//                @Override
+//                public void failure(Exception e) {
+//                    acorn.refresh();
+//                }
+//            });
+//        }
+//
+//    }
 
 }

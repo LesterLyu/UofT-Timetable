@@ -331,7 +331,7 @@ public class CourseManager {
 
                 // cannot be empty json array
                 if (!plannedCourseJson.equals("[]")) {
-                    List<PlannedCourse> plannedCourseList = gson.fromJson(plannedCourseJson.toString(),
+                    List<PlannedCourse> plannedCourseList = gson.fromJson(plannedCourseJson,
                             new TypeToken<List<PlannedCourse>>() {
                             }.getType());
                     plannedCourses.addAll(plannedCourseList);

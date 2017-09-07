@@ -1,5 +1,7 @@
 package com.lvds2000.AcornAPI.auth;
 
+import android.util.Log;
+
 import com.lvds2000.AcornAPI.course.CourseManager;
 import com.lvds2000.AcornAPI.exception.LoginFailedException;
 import com.lvds2000.AcornAPI.grade.GradeManager;
@@ -31,7 +33,7 @@ public class Acorn {
     private OkHttpClient client;
     private String acornUsername;
     private String acornPassword;
-    private AcornCookieJar acoreCookieJar;
+    private AcornCookieJar acornCookieJar;
     private CourseManager courseManager;
     private RegistrationManager registrationManager;
     private GradeManager gradeManager;
@@ -43,9 +45,9 @@ public class Acorn {
     public Acorn(String acornUsername, String acornPassword) {
         this.acornUsername = acornUsername;
         this.acornPassword = acornPassword;
-        acoreCookieJar = new AcornCookieJar();
+        acornCookieJar = new AcornCookieJar();
         this.client = new OkHttpClient.Builder()
-                .cookieJar(acoreCookieJar)
+                .cookieJar(acornCookieJar)
                 .build();
         registrationManager = new RegistrationManager(client);
         courseManager = new CourseManager(client, registrationManager);
@@ -54,9 +56,9 @@ public class Acorn {
     }
 
     public void refresh() {
-        acoreCookieJar = new AcornCookieJar();
+        acornCookieJar = new AcornCookieJar();
         this.client = new OkHttpClient.Builder()
-                .cookieJar(acoreCookieJar)
+                .cookieJar(acornCookieJar)
                 .build();
         registrationManager = new RegistrationManager(client);
         courseManager = new CourseManager(client, registrationManager);
@@ -118,6 +120,7 @@ public class Acorn {
 
                                                     @Override
                                                     public void success(Map<String, String> m) {
+                                                        getRegistrationManager().getEligibleRegistrations();
                                                         sl.success();
                                                     }
 
@@ -154,6 +157,7 @@ public class Acorn {
                         sl.failure(e);
                     }
                 });
+
             }
         });
 
@@ -175,7 +179,9 @@ public class Acorn {
 
             @Override
             public void onResponse(Call call, Response response) throws IOException {
-                if(response.body().string().contains("<html>")){
+                String body = response.body().string();
+                Log.i("isLoggedIn", body);
+                if(body.contains("<html>") || body.contains("Error")){
                     refresh();
                     sl.failure(null);
                 }
@@ -369,6 +375,10 @@ public class Acorn {
             map.put(kv.key(), kv.value());
         }
         return map;
+    }
+
+    public boolean is_used(){
+        return acornCookieJar.getAllCookie().size() != 0;
     }
 
 }

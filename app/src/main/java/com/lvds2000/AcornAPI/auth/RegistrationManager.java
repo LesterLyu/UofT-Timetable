@@ -27,9 +27,9 @@ public class RegistrationManager {
 
     private OkHttpClient client;
 
-    JsonArray registrationsArray;
+    private JsonArray registrationsArray;
 
-    public RegistrationManager(OkHttpClient client) {
+    RegistrationManager(OkHttpClient client) {
         this.client = client;
     }
 
@@ -82,6 +82,10 @@ public class RegistrationManager {
     }
 
 
+    /**
+     *
+     * @return the first param
+     */
     public JsonObject getRegistrationParams(){
         if(registrationsArray == null)
             getEligibleRegistrations();
