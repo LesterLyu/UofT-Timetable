@@ -27,42 +27,57 @@ public class RegistrationManager {
 
     private OkHttpClient client;
 
+    private Acorn acorn;
+
     private JsonArray registrationsArray;
 
-    RegistrationManager(OkHttpClient client) {
+    RegistrationManager(Acorn acorn, OkHttpClient client) {
+        this.acorn = acorn;
         this.client = client;
     }
 
     public List<String> getEligibleRegistrations(){
         System.out.println("Requesting Eligible Registrations...");
         // https://acorn.utoronto.ca/sws/rest/enrolment/eligible-registrations
-        Request request = new Request.Builder()
-                .url("https://acorn.utoronto.ca/sws/rest/enrolment/eligible-registrations")
-                .get()
-                .build();
+
 
         final List<String> output = new ArrayList<String>();
 
-        client.newCall(request).enqueue(new Callback() {
+        acorn.doLogin(new SimpleListener() {
             @Override
-            public void onFailure(Call call, IOException e) {
+            public void success() {
+                Request request = new Request.Builder()
+                        .url("https://acorn.utoronto.ca/sws/rest/enrolment/eligible-registrations")
+                        .get()
+                        .build();
+                client.newCall(request).enqueue(new Callback() {
+                    @Override
+                    public void onFailure(Call call, IOException e) {
 
+                    }
+                    @Override
+                    public void onResponse(Call call, Response response) throws IOException {
+                        String eligibleRegistrationsJson = response.body().string();
+                        //System.out.println(eligibleRegistrationsJson);
+                        // parse the readable string
+                        JsonParser parser = new JsonParser();
+
+                        registrationsArray = parser.parse(eligibleRegistrationsJson).getAsJsonArray();
+
+                        for(JsonElement nextRegistration: registrationsArray) {
+                            output.add(Jsoup.parse(nextRegistration.getAsJsonObject().get("post").getAsJsonObject().get("description").getAsString() + "(" +
+                                    nextRegistration.getAsJsonObject().get("candidacyPostCode").getAsString() + ") " +
+                                    nextRegistration.getAsJsonObject().get("sessionDescription").getAsString()).text());
+                        }
+                    }
+                });
             }
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                String eligibleRegistrationsJson = response.body().string();
-                //System.out.println(eligibleRegistrationsJson);
-                // parse the readable string
-                JsonParser parser = new JsonParser();
-                registrationsArray = parser.parse(eligibleRegistrationsJson).getAsJsonArray();
 
-                for(JsonElement nextRegistration: registrationsArray) {
-                    output.add(Jsoup.parse(nextRegistration.getAsJsonObject().get("post").getAsJsonObject().get("description").getAsString() + "(" +
-                            nextRegistration.getAsJsonObject().get("candidacyPostCode").getAsString() + ") " +
-                            nextRegistration.getAsJsonObject().get("sessionDescription").getAsString()).text());
-                }
+            @Override
+            public void failure(Exception e) {
             }
         });
+
         long prev = System.currentTimeMillis();
         while(output.size() == 0 && System.currentTimeMillis() - prev < 15000 ){
 

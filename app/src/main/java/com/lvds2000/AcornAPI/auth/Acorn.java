@@ -49,7 +49,7 @@ public class Acorn {
         this.client = new OkHttpClient.Builder()
                 .cookieJar(acornCookieJar)
                 .build();
-        registrationManager = new RegistrationManager(client);
+        registrationManager = new RegistrationManager(this, client);
         courseManager = new CourseManager(client, registrationManager);
         gradeManager = new GradeManager(client);
 
@@ -60,7 +60,7 @@ public class Acorn {
         this.client = new OkHttpClient.Builder()
                 .cookieJar(acornCookieJar)
                 .build();
-        registrationManager = new RegistrationManager(client);
+        registrationManager = new RegistrationManager(this, client);
         courseManager = new CourseManager(client, registrationManager);
         gradeManager = new GradeManager(client);
         //this.doLogin();
