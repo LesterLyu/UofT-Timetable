@@ -1,6 +1,8 @@
 # UofT-Timetable
 A Timetable Android app for University of Toronto.
 
+[![Play Store](http://imgur.com/utWa1co.png "Play Store")](https://play.google.com/store/apps/details?id=com.lvds2000.utsccsuntility)
+
 ## Screenshots
 
 <img src="screenshots/1.png" height="400" alt="Screenshot"/> <img src="screenshots/2.png" height="400" alt="Screenshot"/> <img src="screenshots/3.png" height="400" alt="Screenshot"/>
