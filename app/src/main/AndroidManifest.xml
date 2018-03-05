@@ -29,7 +29,6 @@
         </receiver>
         -->
 
-        <activity android:name=".Timetable_SubMenu" />
         <activity
             android:name=".DrawerActivity"
             android:label="@string/title_activity_drawer"
@@ -70,7 +69,11 @@
         <activity
             android:name=".CourseSearcherActivity"
             android:label="@string/title_activity_course_searcher"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
+
+        <activity android:name=".CourseSubMenuActivity"
+            android:label="@string/title_activity_course_searcher"
+            android:theme="@style/AppTheme.NoActionBar" />
     </application>
 
 </manifest>

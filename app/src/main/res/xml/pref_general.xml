@@ -28,11 +28,18 @@
         android:summaryOn="Display all courses information"
         android:defaultValue="false"
         android:summaryOff="Only display the courses you have"/-->
+
+    <Preference android:key="help"
+        android:title="Help &amp; Feedback"
+        android:summary="Report bugs on Github">
+        <intent android:action="android.intent.action.VIEW"
+            android:data="https://github.com/LesterLyu/UofT-Timetable/issues" />
+    </Preference>
+
     <Preference
         android:key="about"
-        android:title="Version"
+        android:title=""
         android:summary="1.18 | 20" />
-
 
     <!-- NOTE: EditTextPreference accepts EditText attributes. -->
     <!-- NOTE: EditTextPreference's summary should be set to its value by the activity code. -->

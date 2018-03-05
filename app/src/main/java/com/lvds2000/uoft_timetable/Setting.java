@@ -12,7 +12,10 @@ import android.preference.Preference;
 import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.PreferenceFragment;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.AlertDialog;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.EditText;
 
 import java.security.InvalidKeyException;
@@ -67,7 +70,7 @@ public class Setting extends AppCompatPreferenceActivity {
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     public static class GeneralPreferenceFragment extends PreferenceFragment{
         private static EditTextPreference usernamePref, passwordPref;
-        private static Preference versionField;
+        private static Preference versionField, help;
         private static ListPreference defaultTimetable;
         private Activity activity;
 
@@ -81,7 +84,12 @@ public class Setting extends AppCompatPreferenceActivity {
             usernamePref = (EditTextPreference) findPreference("username");
             passwordPref = (EditTextPreference) findPreference("password");
             versionField = findPreference("about");
-            versionField.setSummary(DrawerActivity.versionName + " | "+ DrawerActivity.currentVersionCode);
+            help = findPreference("help");
+            versionField.setTitle("UofT Timetable " + DrawerActivity.versionName + " by Dishu(Lester) Lyu");
+            versionField.setSummary("Build " +
+                    DrawerActivity.currentVersionCode +
+                    "\nAcornApi Version " + DrawerActivity.ACORN_API_VERSION + "\n\nThis " +
+                    "App is not affiliated with University of Toronto or Acorn.");
 
 
             // set text to saved password when clicked

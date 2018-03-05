@@ -231,7 +231,7 @@ public class TimetableFragment extends Fragment {
                             break;
                         }
                     }
-                    Intent intent = new Intent(getActivity(), Timetable_SubMenu.class);
+                    Intent intent = new Intent(getActivity(), CourseSubMenuActivity.class);
                     intent.putExtra("CODE", code);
                     intent.putExtra("COLOR", colorCode);
                     intent.putExtra("INDEX",index);

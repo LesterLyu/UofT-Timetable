@@ -283,12 +283,6 @@ public class DrawerActivity extends AppCompatActivity
                     enrolledCourseList =  acorn.getCourseManager().getAppliedCourses();
                 } catch (LoginFailedException e) {
                     showError(e);
-                    if(progress != null)
-                        progress.cancel();
-                    for (SwipeRefreshLayout swipeContainer : TimetableFragment.swipeContainers) {
-                        swipeContainer.setRefreshing(false);
-                    }
-                    TimetableFragment.updating = false;
                     return;
                 }
 
@@ -419,45 +413,5 @@ public class DrawerActivity extends AppCompatActivity
         });
 
     }
-//
-//    @Override
-//    public void onSaveInstanceState(Bundle savedInstanceState){
-//        super.onSaveInstanceState(savedInstanceState);
-//        // save title
-//        if (navi_menu.getItem(0).isChecked()) {
-//            savedInstanceState.putString("title" ,"Course List");
-//        } else if (navi_menu.getItem(1).isChecked()) {
-//            savedInstanceState.putString("title" ,"Fall Timetable");
-//        } else if (navi_menu.getItem(2).isChecked()) {
-//            savedInstanceState.putString("title" ,"Winter Timetable");
-//        } else if (navi_menu.getItem(3).isChecked() || navi_menu.getItem(4).isChecked()) {
-//            savedInstanceState.putString("title" ,"Summer Timetable");
-//        } else if (navi_menu.getItem(5).isChecked()) {
-//            savedInstanceState.putString("title" ,"Academic History");
-//        }
-//        // save if the acorn object has been used to download timetable
-//        savedInstanceState.putBoolean("is_used" ,acorn.is_used());
-//
-//    }
-//
-//    @Override
-//    public void onRestoreInstanceState(Bundle savedInstanceState){
-//        super.onRestoreInstanceState(savedInstanceState);
-//        setTitle(savedInstanceState.getString("title"));
-//        Log.i("onRestoreInstanceState" ,"restore states");
-//        if(savedInstanceState.getBoolean("is_used")){
-//            acorn.isLoggedIn(new SimpleListener() {
-//                @Override
-//                public void success() {
-//                }
-//
-//                @Override
-//                public void failure(Exception e) {
-//                    acorn.refresh();
-//                }
-//            });
-//        }
-//
-//    }
 
 }
