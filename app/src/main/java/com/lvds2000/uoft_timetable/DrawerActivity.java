@@ -384,6 +384,7 @@ public class DrawerActivity extends AppCompatActivity
     public void showError(Exception e){
         e.printStackTrace();
         final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setCancelable(false);
         builder.setMessage(e.getMessage())
                 .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     public void onClick(final DialogInterface dialog, int id) {
