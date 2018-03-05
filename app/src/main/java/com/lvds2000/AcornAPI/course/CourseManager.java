@@ -2,18 +2,17 @@ package com.lvds2000.AcornAPI.course;
 
 import android.util.Log;
 
-import com.google.android.gms.analytics.HitBuilders;
-import com.google.android.gms.analytics.Tracker;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
+import com.lvds2000.AcornAPI.auth.AcornCookieJar;
 import com.lvds2000.AcornAPI.auth.RegistrationManager;
 import com.lvds2000.AcornAPI.enrol.EnrolledCourse;
 import com.lvds2000.AcornAPI.enrol.Meeting;
 import com.lvds2000.AcornAPI.plan.PlannedCourse;
-import com.lvds2000.uoft_timetable.AnalyticsTrackers;
+import com.lvds2000.AcornAPI.exception.LoginFailedException;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -21,12 +20,14 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import okhttp3.Call;
-import okhttp3.Callback;
+import okhttp3.Cookie;
 import okhttp3.HttpUrl;
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
+
 
 /**
  *
@@ -35,11 +36,13 @@ import okhttp3.Response;
  */
 public class CourseManager {
 
+    public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+
     private OkHttpClient client;
 
     private RegistrationManager registrationManager;
 
-    private boolean loaded = false, loaded2 = false;
+    public String lastErrorMsg = "N/A";
 
     /**
      * includes enrolled courses and waiting listed courses and dropped(late withdraw) courses
@@ -64,20 +67,19 @@ public class CourseManager {
      * Note:
      * UTSC separate 1 year into two registrations, UTSG has only one registration per year,
      * for UTM idk.
+     * @throws LoginFailedException
      */
-    public void loadCourses(){
+    public void loadCourses() throws LoginFailedException{
         // clear first
         appliedCourses = new ArrayList<EnrolledCourse>();
         plannedCourses = new ArrayList<PlannedCourse>();
-        loaded = false;
         for(int i = 0; i < registrationManager.getNumberOfRegistrations(); i++){
             loadEnrolledCourses(i);
             loadPlannedCourse(i);
         }
     }
 
-    private void loadEnrolledCourses(final int registrationIndex){
-        loaded = false;
+    private void loadEnrolledCourses(int registrationIndex) throws LoginFailedException{
         JsonObject registionParams = registrationManager.getRegistrationParams(registrationIndex)
                 .get("registrationParams").getAsJsonObject();
         //System.out.println(registionParams);
@@ -109,96 +111,74 @@ public class CourseManager {
                 .get()
                 .build();
 
+        try {
+            Response response = client.newCall(request).execute();
 
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                Log.e("loadEnrolledCourses", e.getMessage());
-            }
+            String appliedCourseJson = response.body().string();
+            //System.out.println(appliedCourseJson);
+            Gson gson = new Gson();
 
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                String appliedCourseJson = response.body().string();
-                //System.out.println(appliedCourseJson);
-                Gson gson = new Gson();
+            if(!appliedCourseJson.equals("{}")) {
+                // process json
+                JsonParser parser = new JsonParser();
+                JsonObject courseJsonObject = parser.parse(appliedCourseJson).getAsJsonObject();
 
-                if(!appliedCourseJson.equals("{}")) {
-                    // process json
-                    JsonParser parser = new JsonParser();
-                    JsonObject courseJsonObject;
-                    try{
-                        courseJsonObject = parser.parse(appliedCourseJson).getAsJsonObject();
-                    } catch (Exception e) {
-                        Tracker t = AnalyticsTrackers.getInstance().get(AnalyticsTrackers.Target.APP);
-                        t.send(new HitBuilders.ExceptionBuilder()
-                                .setDescription( "Error \nappliedCourseJson=" + appliedCourseJson)
-                                .setFatal(true)
-                                .build());
-                        // ???? temp avoid exception
-                        appliedCourseJson = "{}";
-                        courseJsonObject = parser.parse(appliedCourseJson).getAsJsonObject();
-                    }
-                    List<EnrolledCourse> enrolledCourseList;
-                    List<EnrolledCourse> waitlistedCourseList;
-                    List<EnrolledCourse> droppedCourseList;
+                List<EnrolledCourse> enrolledCourseList;
+                List<EnrolledCourse> waitlistedCourseList;
+                List<EnrolledCourse> droppedCourseList;
 
-                    // enrolled course
-                    if(courseJsonObject.has("APP")){
-                        JsonArray jsonArrayAPP = courseJsonObject.get("APP").getAsJsonArray();
-                        enrolledCourseList = gson.fromJson(jsonArrayAPP.toString(),
-                                new TypeToken<List<EnrolledCourse>>(){}.getType());
-                        appliedCourses.addAll(enrolledCourseList);
-                    }
-                    // wait listed course
-                    if(courseJsonObject.has("WAIT")) {
-                        // for waitlisted course, I need to get more info from
-                        // https://acorn.utoronto.ca/sws/rest/enrolment/course/view
-                        // i.e. wait list rank, etc
-
-                        JsonArray jsonArrayWAIT = courseJsonObject.get("WAIT").getAsJsonArray();
-                        waitlistedCourseList = gson.fromJson(jsonArrayWAIT.toString(), new TypeToken<List<EnrolledCourse>>(){}.getType());
-                        // get courseCode and sectionCode
-                        for(EnrolledCourse nextCourse: waitlistedCourseList){
-                            String courseCode = nextCourse.getCode();
-                            String courseSessionCode = nextCourse.getSessionCode();
-                            String sectionCode = nextCourse.getSectionCode();
-                            // load extra info but still the same object type
-                            EnrolledCourse newCourse = loadExtraInfo(courseCode, courseSessionCode, sectionCode, registrationIndex);
-                            System.out.println(newCourse);
-                            appliedCourses.add(newCourse);
-                        }
-
-                    }
-                    if(courseJsonObject.has("DROP")) {
-                        JsonArray jsonArrayDROP = courseJsonObject.get("DROP").getAsJsonArray();
-                        droppedCourseList = gson.fromJson(jsonArrayDROP.toString(), new TypeToken<List<EnrolledCourse>>(){}.getType());
-                        appliedCourses.addAll(droppedCourseList);
-                    }
-
-                    Collections.sort(appliedCourses, new Comparator<EnrolledCourse>() {
-                        @Override
-                        public int compare(EnrolledCourse o1, EnrolledCourse o2) {
-                            if(o1.getSectionCode().equalsIgnoreCase("S") && (o2.getSectionCode().equalsIgnoreCase("Y") || o2.getSectionCode().equalsIgnoreCase("F")))
-                                return 1;
-                            else if(o1.getSectionCode().equalsIgnoreCase("Y") && o2.getSectionCode().equalsIgnoreCase("F"))
-                                return 1;
-                            else if(!o1.getSectionCode().equalsIgnoreCase(o2.getSectionCode()))
-                                return -1;
-                            else{
-                                return o1.getCode().compareToIgnoreCase(o2.getCode());
-                            }
-                        }
-                    });
+                // enrolled course
+                if(courseJsonObject.has("APP")){
+                    JsonArray jsonArrayAPP = courseJsonObject.get("APP").getAsJsonArray();
+                    enrolledCourseList = gson.fromJson(jsonArrayAPP.toString(),
+                            new TypeToken<List<EnrolledCourse>>(){}.getType());
+                    appliedCourses.addAll(enrolledCourseList);
                 }
-                loaded = true;
+                // wait listed course
+                if(courseJsonObject.has("WAIT")) {
+                    // for waitlisted course, I need to get more info from
+                    // https://acorn.utoronto.ca/sws/rest/enrolment/course/view
+                    // i.e. wait list rank, etc
+
+                    JsonArray jsonArrayWAIT = courseJsonObject.get("WAIT").getAsJsonArray();
+                    waitlistedCourseList = gson.fromJson(jsonArrayWAIT.toString(), new TypeToken<List<EnrolledCourse>>(){}.getType());
+                    // get courseCode and sectionCode
+                    for(EnrolledCourse nextCourse: waitlistedCourseList){
+                        String courseCode = nextCourse.getCode();
+                        String courseSessionCode = nextCourse.getSessionCode();
+                        String sectionCode = nextCourse.getSectionCode();
+                        // load extra info but still the same object type
+                        EnrolledCourse newCourse = loadExtraInfo(courseCode, courseSessionCode, sectionCode, registrationIndex);
+                        System.out.println(newCourse);
+                        appliedCourses.add(newCourse);
+                    }
+
+                }
+                if(courseJsonObject.has("DROP")) {
+                    JsonArray jsonArrayDROP = courseJsonObject.get("DROP").getAsJsonArray();
+                    droppedCourseList = gson.fromJson(jsonArrayDROP.toString(), new TypeToken<List<EnrolledCourse>>(){}.getType());
+                    appliedCourses.addAll(droppedCourseList);
+                }
+
+                Collections.sort(appliedCourses, new Comparator<EnrolledCourse>() {
+                    @Override
+                    public int compare(EnrolledCourse o1, EnrolledCourse o2) {
+                        if(o1.getSectionCode().equalsIgnoreCase("S") && (o2.getSectionCode().equalsIgnoreCase("Y") || o2.getSectionCode().equalsIgnoreCase("F")))
+                            return 1;
+                        else if(o1.getSectionCode().equalsIgnoreCase("Y") && o2.getSectionCode().equalsIgnoreCase("F"))
+                            return 1;
+                        else if(!o1.getSectionCode().equalsIgnoreCase(o2.getSectionCode()))
+                            return -1;
+                        else{
+                            return o1.getCode().compareToIgnoreCase(o2.getCode());
+                        }
+                    }
+                });
             }
-        });
-        long prev = System.currentTimeMillis();
-        while(System.currentTimeMillis() - prev < 10000 && !loaded){
 
+        } catch(Exception e){
+            e.printStackTrace();
         }
-        Log.i("loadEnrolledCourses", "consume " + (System.currentTimeMillis() - prev) + "ms");
-
     }
 
     /**
@@ -206,9 +186,9 @@ public class CourseManager {
      * AND
      * For searching a course info, even though not enrolled or waiting listed yet.
      * @return a complete EnrolledCourse
+     * @throws LoginFailedException
      */
-    private EnrolledCourse loadExtraInfo(String courseCode, String courseSessionCode, String sectionCode, int registrationIndex){
-        loaded2 = false;
+    private EnrolledCourse loadExtraInfo(String courseCode, String courseSessionCode, String sectionCode, int registrationIndex) throws LoginFailedException{
         JsonObject registionParams = registrationManager.getRegistrationParams(registrationIndex)
                 .get("registrationParams").getAsJsonObject();
         //System.out.println(registionParams);
@@ -246,30 +226,15 @@ public class CourseManager {
                 .url(url)
                 .get()
                 .build();
-        final EnrolledCourse res[] = new EnrolledCourse[1];
         try {
-            client.newCall(request).enqueue(new Callback() {
-                @Override
-                public void onFailure(Call call, IOException e) {
+            Response response = client.newCall(request).execute();
 
-                }
-
-                @Override
-                public void onResponse(Call call, Response response) throws IOException {
-                    String courseJson = response.body().string();
-                    //System.out.println(courseJson);
-                    Gson gson = new Gson();
-                    JsonParser parser = new JsonParser();
-                    JsonObject courseJsonObject = parser.parse(courseJson).getAsJsonObject().get("responseObject").getAsJsonObject();
-                    res[0] = gson.fromJson(courseJsonObject, EnrolledCourse.class);
-                    loaded2 = true;
-                }
-            });
-
-            long prev = System.currentTimeMillis();
-            while(System.currentTimeMillis() - prev < 15000 && !loaded2){}
-            Log.i("loadExtraInfo", "consume " + (System.currentTimeMillis() - prev) + "ms");
-            return res[0];
+            String courseJson = response.body().string();
+            System.out.println(courseJson);
+            Gson gson = new Gson();
+            JsonParser parser = new JsonParser();
+            JsonObject courseJsonObject = parser.parse(courseJson).getAsJsonObject().get("responseObject").getAsJsonObject();
+            return gson.fromJson(courseJsonObject, EnrolledCourse.class);
 
         } catch(Exception e){
             e.printStackTrace();
@@ -285,8 +250,9 @@ public class CourseManager {
      * @param sectionCode S
      * @param registrationIndex 0
      * @return
+     * @throws LoginFailedException
      */
-    public String getCourseSpace(String courseCode, String courseSessionCode, String sectionCode, int registrationIndex){
+    public String getCourseSpace(String courseCode, String courseSessionCode, String sectionCode, int registrationIndex) throws LoginFailedException{
         EnrolledCourse course = loadExtraInfo(courseCode, courseSessionCode, sectionCode, registrationIndex);
         String spaceInfo = courseCode + sectionCode + " Space: ";
         for(Meeting meeting: course.getMeetings()){
@@ -297,8 +263,7 @@ public class CourseManager {
     }
 
 
-    private void loadPlannedCourse(int registrationIndex){
-        loaded = false;
+    private void loadPlannedCourse(int registrationIndex) throws LoginFailedException{
         // https://acorn.utoronto.ca/sws/rest/enrolment/plan?candidacyPostCode=ASPRGHBSC&candidacySessionCode=20169&sessionCode=20169
         JsonObject registionParams = registrationManager.getRegistrationParams(registrationIndex).getAsJsonObject();
         //System.out.println(registionParams);
@@ -316,64 +281,124 @@ public class CourseManager {
                 .get()
                 .build();
 
+        try {
+            Response response = client.newCall(request).execute();
 
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
+            String plannedCourseJson = response.body().string();
+            //System.out.println("Planned courses: " + plannedCourseJson);
+            Gson gson = new Gson();
 
+            // cannot be empty json array
+            if(!plannedCourseJson.equals("[]")) {
+                List<PlannedCourse> plannedCourseList = gson.fromJson(plannedCourseJson.toString(),
+                        new TypeToken<List<PlannedCourse>>(){}.getType());
+                plannedCourses.addAll(plannedCourseList);
+
+
+                Collections.sort(plannedCourses, new Comparator<PlannedCourse>() {
+                    @Override
+                    public int compare(PlannedCourse o1, PlannedCourse o2) {
+                        if(o1.getSectionCode().equalsIgnoreCase("S") && (o2.getSectionCode().equalsIgnoreCase("Y") || o2.getSectionCode().equalsIgnoreCase("F")))
+                            return 1;
+                        else if(o1.getSectionCode().equalsIgnoreCase("Y") && o2.getSectionCode().equalsIgnoreCase("F"))
+                            return 1;
+                        else if(!o1.getSectionCode().equalsIgnoreCase(o2.getSectionCode()))
+                            return -1;
+                        else{
+                            return o1.getCourseCode().compareToIgnoreCase(o2.getCourseCode());
+                        }
+                    }
+                });
             }
 
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                String plannedCourseJson = response.body().string();
-                //System.out.println(plannedCourseJson);
-                Gson gson = new Gson();
 
-                // cannot be empty json array
-                if (!plannedCourseJson.equals("[]")) {
-                    List<PlannedCourse> plannedCourseList = gson.fromJson(plannedCourseJson,
-                            new TypeToken<List<PlannedCourse>>() {
-                            }.getType());
-                    plannedCourses.addAll(plannedCourseList);
+        } catch(Exception e){
+            e.printStackTrace();
+        }
 
-
-                    Collections.sort(plannedCourses, new Comparator<PlannedCourse>() {
-                        @Override
-                        public int compare(PlannedCourse o1, PlannedCourse o2) {
-                            if (o1.getSectionCode().equalsIgnoreCase("S") && (o2.getSectionCode().equalsIgnoreCase("Y") || o2.getSectionCode().equalsIgnoreCase("F")))
-                                return 1;
-                            else if (o1.getSectionCode().equalsIgnoreCase("Y") && o2.getSectionCode().equalsIgnoreCase("F"))
-                                return 1;
-                            else if (!o1.getSectionCode().equalsIgnoreCase(o2.getSectionCode()))
-                                return -1;
-                            else {
-                                return o1.getCourseCode().compareToIgnoreCase(o2.getCourseCode());
-                            }
-                        }
-                    });
-                }
-                loaded = true;
-            }});
-        long prev = System.currentTimeMillis();
-        while(System.currentTimeMillis() - prev < 15000 && !loaded){}
-        loaded = false;
-        Log.i("loadPlannedCourse", "consume " + (System.currentTimeMillis() - prev) + "ms");
     }
 
-
-    public List<EnrolledCourse> getAppliedCourses() {
-        if (appliedCourses.size() == 0)
+    public List<EnrolledCourse> getAppliedCourses() throws LoginFailedException{
+        if(appliedCourses.size() == 0)
             loadCourses();
         return appliedCourses;
     }
 
-    public List<PlannedCourse> getPlannedCourses() {
+    public List<PlannedCourse> getPlannedCourses(){
         return plannedCourses;
     }
 
-    public void refresh() {
+    public void refresh() throws LoginFailedException{
         appliedCourses = new ArrayList<EnrolledCourse>();
         plannedCourses = new ArrayList<PlannedCourse>();
         loadCourses();
     }
+
+    /**
+     * normally registrationIndex=1 is summer
+     * {"course":{"code":"CSC236H1","sectionCode":"Y","primaryTeachMethod":"LEC","enroled":false},"lecture":{"sectionNo":"LEC,5101"},"tutorial":{},"practical":{}}
+     * @param registrationIndex
+     * @throws LoginFailedException
+     */
+    public boolean enroll(int registrationIndex, String code, String sectionCode, String lectureSectionNo) throws LoginFailedException{
+        JsonObject registionParams = registrationManager.getRegistrationParams(registrationIndex)
+                .get("registrationParams").getAsJsonObject();
+
+        JsonObject course = new JsonObject();
+        course.addProperty("code", code.toUpperCase());
+        course.addProperty("sectionCode", sectionCode.toUpperCase());
+        course.addProperty("primaryTeachMethod", "LEC");
+        course.addProperty("enroled", "false");
+
+        JsonObject lecture = new JsonObject();
+        lecture.addProperty("sectionNo", lectureSectionNo.toUpperCase());
+
+        JsonObject activeCourse = new JsonObject();
+        activeCourse.add("course", course);
+        activeCourse.add("lecture", lecture);
+        activeCourse.add("tutorial", new JsonObject());
+        activeCourse.add("practical", new JsonObject());
+
+        JsonObject requestBody = new JsonObject();
+        requestBody.add("activeCourse", activeCourse);
+        requestBody.add("eligRegParams", registionParams);
+
+        RequestBody body = RequestBody.create(JSON, requestBody.toString());
+
+        AcornCookieJar cookieJar = (AcornCookieJar) client.cookieJar();
+        String token = "";
+
+        for(Cookie c: cookieJar.getAllCookie().get("acorn.utoronto.ca")){
+            if(c.name().equalsIgnoreCase("XSRF-TOKEN")){
+                token = c.value();
+            }
+        }
+
+
+        Request request = new Request.Builder()
+                .url("https://acorn.utoronto.ca/sws/rest/enrolment/course/modify")
+                .post(body)
+                .header("X-XSRF-TOKEN", token)
+                .build();
+
+        try {
+            Response response = client.newCall(request).execute();
+            String result = response.body().string();
+            System.out.println("status code: " + response.code() + " return value: " + result);
+            if(response.code() == 500){
+                lastErrorMsg = result;
+                return false;
+            }
+            else if(response.code() == 200)
+                return true;
+
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+        return false;
+
+    }
+
 }

@@ -30,6 +30,7 @@ import com.google.gson.Gson;
 import com.lvds2000.AcornAPI.auth.Acorn;
 import com.lvds2000.AcornAPI.auth.SimpleListener;
 import com.lvds2000.AcornAPI.enrol.EnrolledCourse;
+import com.lvds2000.AcornAPI.exception.LoginFailedException;
 import com.lvds2000.AcornAPI.plan.PlannedCourse;
 import com.lvds2000.uoft_timetable.utils.Configuration;
 import com.lvds2000.uoft_timetable.utils.UserInfo;
@@ -60,6 +61,8 @@ public class DrawerActivity extends AppCompatActivity
     public static String versionName, currentVersionCode;
     private static ProgressDialog progress;
     public static Acorn acorn;
+
+    public static final String ACORN_API_VERSION = "0.0.2.Android";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -272,10 +275,23 @@ public class DrawerActivity extends AppCompatActivity
         acorn.doLogin(new SimpleListener() {
             @Override
             public void success() {
-                acorn.getCourseManager().loadCourses();
-                List<com.lvds2000.entity.Course> courseList = new ArrayList<>();
 
-                List<EnrolledCourse> enrolledCourseList =  acorn.getCourseManager().getAppliedCourses();
+                List<com.lvds2000.entity.Course> courseList = new ArrayList<>();
+                List<EnrolledCourse> enrolledCourseList = null;
+                try{
+                    acorn.getCourseManager().loadCourses();
+                    enrolledCourseList =  acorn.getCourseManager().getAppliedCourses();
+                } catch (LoginFailedException e) {
+                    showError(e);
+                    if(progress != null)
+                        progress.cancel();
+                    for (SwipeRefreshLayout swipeContainer : TimetableFragment.swipeContainers) {
+                        swipeContainer.setRefreshing(false);
+                    }
+                    TimetableFragment.updating = false;
+                    return;
+                }
+
                 for(EnrolledCourse enrolledCourse: enrolledCourseList){
                     Log.i("downloadCourseData", enrolledCourse.toString());
                     try{
@@ -334,36 +350,7 @@ public class DrawerActivity extends AppCompatActivity
 
             @Override
             public void failure(Exception e) {
-                e.printStackTrace();
-                final AlertDialog.Builder builder = new AlertDialog.Builder(context);
-                builder.setMessage(e.getMessage())
-                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                            public void onClick(final DialogInterface dialog, int id) {
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        dialog.cancel();
-                                        // this method may be called by another class
-                                        if(progress != null)
-                                            progress.cancel();
-                                        for (SwipeRefreshLayout swipeContainer : TimetableFragment.swipeContainers) {
-                                            swipeContainer.setRefreshing(false);
-                                        }
-                                        TimetableFragment.updating = false;
-                                    }
-                                });
-                            }
-                        });
-                // clear the password if the user input a wrong password
-                if(e.getMessage().contains("Username"))
-                    UserInfo.clearPassword(context);
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        builder.create().show();
-                    }
-                });
-
+                showError(e);
             }
         });
 
@@ -398,6 +385,39 @@ public class DrawerActivity extends AppCompatActivity
             setTitle("Summer S Timetable");
             navi_menu.getItem(4).setChecked(true);
         }
+    }
+
+    public void showError(Exception e){
+        e.printStackTrace();
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(e.getMessage())
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    public void onClick(final DialogInterface dialog, int id) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                dialog.cancel();
+                                // this method may be called by another class
+                                if(progress != null)
+                                    progress.cancel();
+                                for (SwipeRefreshLayout swipeContainer : TimetableFragment.swipeContainers) {
+                                    swipeContainer.setRefreshing(false);
+                                }
+                                TimetableFragment.updating = false;
+                            }
+                        });
+                    }
+                });
+        // clear the password if the user input a wrong password
+        if(e.getMessage().contains("Username"))
+            UserInfo.clearPassword(this);
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                builder.create().show();
+            }
+        });
+
     }
 //
 //    @Override
