@@ -282,6 +282,7 @@ public class DrawerActivity extends AppCompatActivity
                     acorn.getCourseManager().loadCourses();
                     enrolledCourseList =  acorn.getCourseManager().getAppliedCourses();
                 } catch (LoginFailedException e) {
+                    acorn.refresh();
                     showError(e);
                     return;
                 }
@@ -344,6 +345,7 @@ public class DrawerActivity extends AppCompatActivity
 
             @Override
             public void failure(Exception e) {
+                acorn.refresh();
                 showError(e);
             }
         });
