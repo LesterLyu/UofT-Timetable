@@ -47,7 +47,7 @@ public class CourseSearcher{
     public static void getCourseInfo(String code, final ResponseListener r) {
 
         Request request = new Request.Builder()
-                .url("https://timetable.iit.artsci.utoronto.ca/api/20179/courses?code=" + code)
+                .url("https://timetable.iit.artsci.utoronto.ca/api/20189/courses?code=" + code)
                 .get()
                 .build();
 
