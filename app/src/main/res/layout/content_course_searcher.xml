@@ -21,16 +21,20 @@
             android:layout_height="wrap_content">
 
             <TextView
-                android:paddingLeft="@dimen/screen_percentage_05"
-                android:paddingRight="@dimen/screen_percentage_05"
+                android:paddingLeft="5pt"
+                android:paddingRight="5pt"
+                android:paddingStart="5pt"
+                android:paddingEnd="5pt"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:textSize="17sp"
-                android:text="@string/course_code"/>
+                android:text="@string/course_code" />
 
             <LinearLayout
-                android:paddingLeft="@dimen/screen_percentage_05"
-                android:paddingRight="@dimen/screen_percentage_05"
+                android:paddingLeft="5pt"
+                android:paddingRight="5pt"
+                android:paddingStart="5pt"
+                android:paddingEnd="5pt"
                 android:orientation="horizontal"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
@@ -43,9 +47,9 @@
                     android:singleLine="true"
                     android:layout_height="match_parent" />
 
-                <android.support.v4.widget.Space
-                    android:layout_width="@dimen/screen_percentage_05"
-                    android:layout_height="wrap_content" />
+                <Space
+                    android:layout_height="wrap_content"
+                    android:layout_width="5pt" />
 
                 <Button
                     style="@style/Widget.AppCompat.Button.Colored"

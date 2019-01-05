@@ -556,7 +556,7 @@ public class TimetableFragment extends Fragment {
                             //System.out.println(day.getDayOfWeek());
                             weekNum = dayToNum.get(day.getDayOfWeek());
                             //System.out.println( weekNum[courseNum]);
-                            SimpleDateFormat format = new SimpleDateFormat("hh:mma", Locale.CANADA);
+                            SimpleDateFormat format = new SimpleDateFormat("hh:mma", Locale.ENGLISH);
                             try {
                                 startTime = format.parse(day.getStartTime()).getHours();
                                 endTime = format.parse(day.getEndTime()).getHours();
