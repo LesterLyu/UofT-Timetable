@@ -24,6 +24,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
+import com.crashlytics.android.Crashlytics;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
 import com.google.gson.Gson;
@@ -148,6 +149,8 @@ public class DrawerActivity extends AppCompatActivity
 
         Configuration.saveString("versionCode", "" + currentVersionCode, this);
         Configuration.saveString("versionName", "" + versionName, this);
+
+        Crashlytics.log(Log.DEBUG, "init", "app started up");
     }
 
 
@@ -159,6 +162,7 @@ public class DrawerActivity extends AppCompatActivity
         } else {
             super.onBackPressed();
         }
+
     }
 
     @Override

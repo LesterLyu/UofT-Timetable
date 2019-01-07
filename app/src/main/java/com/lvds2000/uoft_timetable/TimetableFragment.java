@@ -19,6 +19,7 @@ import android.widget.GridLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.crashlytics.android.Crashlytics;
 import com.google.gson.Gson;
 import com.lvds2000.AcornAPI.auth.Acorn;
 import com.lvds2000.AcornAPI.plan.Day;
@@ -89,6 +90,7 @@ public class TimetableFragment extends Fragment {
         //System.out.println("courseJson=" + courseJson);
         if(courseJson == null || courseJson.equals(""))
             courseJson = Configuration.loadString("courseJson", activity);
+        Crashlytics.log(Log.DEBUG, "loadJson", courseJson);
         Gson gson = new Gson();
         courseList = gson.fromJson(courseJson, com.lvds2000.entity.Course[].class);
 
@@ -571,6 +573,8 @@ public class TimetableFragment extends Fragment {
                             addContent(startTime, weekNum, endTime - startTime,
                                     contentCourse, courseList[courseNum], courseNum);
                         }
+//                        addContent((float) 10.5, 5, 2,
+//                            " CSC000H1\n LEC 0101\n BA1111", courseList[0], 0);
                 }
             }
             courseNum ++;

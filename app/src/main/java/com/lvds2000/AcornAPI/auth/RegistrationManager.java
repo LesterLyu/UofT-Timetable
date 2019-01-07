@@ -36,7 +36,7 @@ public class RegistrationManager {
     }
 
     public List<String> getEligibleRegistrations() throws LoginFailedException {
-        System.out.println("Requesting Eligible Registrations...");
+//        System.out.println("Requesting Eligible Registrations...");
         // https://acorn.utoronto.ca/sws/rest/enrolment/eligible-registrations
         Request request = new Request.Builder()
                 .url("https://acorn.utoronto.ca/sws/rest/enrolment/eligible-registrations")
@@ -53,7 +53,7 @@ public class RegistrationManager {
                 throw new LoginFailedException("ACORN is currently unavailable. We apologize for any inconvenience.");
             }
 
-            System.out.println(eligibleRegistrationsJson);
+//            System.out.println(eligibleRegistrationsJson);
             // parse the readable string
             JsonParser parser = new JsonParser();
             registrationsArray = parser.parse(eligibleRegistrationsJson).getAsJsonArray();
