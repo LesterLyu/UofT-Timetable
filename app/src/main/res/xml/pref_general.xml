@@ -15,12 +15,6 @@
         android:title="UTORid / JOINid"
         android:defaultValue=""
         android:summary="Acorn login username" />
-    <EditTextPreference
-        android:key = "password"
-        android:title="Password"
-        android:defaultValue=""
-        android:inputType="textPassword"
-        android:summary="Acorn login password" />
 
     <!--SwitchPreference
         android:key="debug_switch"
@@ -34,6 +28,19 @@
         android:summary="Report bugs on Github">
         <intent android:action="android.intent.action.VIEW"
             android:data="https://github.com/LesterLyu/UofT-Timetable/issues" />
+    </Preference>
+
+    <EditTextPreference
+        android:defaultValue=""
+        android:inputType="textPassword"
+        android:key="password"
+        android:summary="Acorn login password"
+        android:title="Password" />
+
+    <Preference android:key="privacy"
+        android:title="Privacy Policy">
+        <intent android:action="android.intent.action.VIEW"
+            android:data="http://timetable.lesterlyu.com/privacy_policy.html" />
     </Preference>
 
     <Preference
